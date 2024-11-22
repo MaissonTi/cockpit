@@ -20,6 +20,7 @@ interface GroupState {
   timerActive: boolean;
   timeRemaining: number; // Tempo restante em segundos
   admin: string; // Nome do administrador do grupo
+  users: number; // Contador de usuários
 }
 
 @WebSocketGateway({
@@ -32,7 +33,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   server: Server;
 
   // Estado dos grupos
-  private groups: Record<string, GroupState> = {};
+  private groups: Record<
+    string,
+    {
+      bids: Bid[];
+      timerActive: boolean;
+      timeRemaining: number;
+      admin: string;
+      users: number;
+      intervalId?: NodeJS.Timeout; // Referência ao cronômetro do grupo
+    }
+  > = {};
 
   handleConnection(client: Socket) {
     console.log(`Cliente conectado: ${client.id}`);
@@ -65,17 +76,20 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ): void {
     client.join(group);
 
-    // Inicializa o grupo se ainda não existir
     if (!this.groups[group]) {
       this.groups[group] = {
         bids: [],
         timerActive: false,
         timeRemaining: 0,
-        admin: user, // O primeiro usuário a criar o grupo torna-se administrador
+        admin: user,
+        users: 0, // Contador de usuários
       };
     }
 
-    // Envia ao cliente os detalhes do grupo
+    this.groups[group].users += 1;
+
+    this.server.to(group).emit('userCountUpdate', this.groups[group].users);
+
     client.emit('groupJoined', {
       group,
       admin: this.groups[group].admin,
@@ -83,74 +97,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       timeRemaining: this.groups[group].timeRemaining,
     });
 
-    client.emit('bidsUpdate', this.groups[group].bids); // Envia os lances atuais
-    client.emit('timerUpdate', {
-      timerActive: this.groups[group].timerActive,
-      timeRemaining: this.groups[group].timeRemaining,
-    });
-  }
-
-  @SubscribeMessage('startTimer')
-  handleStartTimer(
-    @MessageBody() { group, user }: { group: string; user: string },
-    @ConnectedSocket() client: Socket,
-  ): void {
-    if (!this.groups[group]) {
-      client.emit('error', 'Grupo não encontrado.');
-      return;
-    }
-
-    if (this.groups[group].admin !== user) {
-      client.emit('error', 'Apenas o administrador pode iniciar o cronômetro.');
-      return;
-    }
-
-    if (this.groups[group].timerActive) {
-      client.emit('error', 'O cronômetro já está ativo.');
-      return;
-    }
-
-    this.groups[group].timerActive = true;
-    this.groups[group].timeRemaining = 30; // 2 minutos
-
-    this.server.to(group).emit('timerUpdate', {
-      timerActive: true,
-      timeRemaining: 30,
-    });
-
-    // Cronômetro
-    const interval = setInterval(() => {
-      this.groups[group].timeRemaining -= 1;
-
-      // Notifica os clientes com o tempo restante
-      this.server.to(group).emit('timerUpdate', {
-        timerActive: true,
-        timeRemaining: this.groups[group].timeRemaining,
-      });
-
-      // Verifica se o tempo acabou
-      if (this.groups[group].timeRemaining <= 0) {
-        this.groups[group].timerActive = false;
-        clearInterval(interval);
-
-        // Determina o vencedor
-        const highestBid = this.groups[group].bids.reduce(
-          (max, b) => (b.amount > max.amount ? b : max),
-          {
-            user: 'Ninguém',
-            amount: 0,
-          },
-        );
-
-        // Notifica os membros sobre o vencedor
-        this.server.to(group).emit('winnerAnnounced', highestBid);
-
-        this.server.to(group).emit('timerUpdate', {
-          timerActive: false,
-          timeRemaining: 0,
-        });
-      }
-    }, 1000); // Atualiza a cada segundo
+    client.emit('bidsUpdate', this.groups[group].bids);
   }
 
   @SubscribeMessage('bid')
@@ -188,5 +135,208 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     // Atualiza todos os membros do grupo com os lances mais recentes
     this.server.to(group).emit('bidsUpdate', this.groups[group].bids);
+  }
+
+  @SubscribeMessage('leaveGroup')
+  handleLeaveGroup(
+    @MessageBody() group: string,
+    @ConnectedSocket() client: Socket,
+  ): void {
+    if (!this.groups[group]) {
+      return;
+    }
+
+    const isAdmin = this.groups[group].admin === client.id;
+
+    if (isAdmin) {
+      // Notifica os usuários que o grupo será excluído em 5 segundos
+      this.server.to(group).emit('groupWillBeDeleted', { group, timeout: 5 });
+
+      console.log(
+        `Administrador saiu do grupo ${group}. O grupo será excluído em 5 segundos.`,
+      );
+
+      setTimeout(() => {
+        this.server.to(group).emit('groupDeleted', group);
+        delete this.groups[group];
+        console.log(`Grupo ${group} foi excluído.`);
+      }, 5000);
+    } else {
+      // Remove o cliente do grupo
+      client.leave(group);
+      this.groups[group].users = Math.max(0, this.groups[group].users - 1);
+      this.server.to(group).emit('userCountUpdate', this.groups[group].users);
+      console.log(
+        `Usuário saiu do grupo: ${group}. Usuários restantes: ${this.groups[group].users}`,
+      );
+    }
+  }
+
+  @SubscribeMessage('pauseTimer')
+  handlePauseTimer(
+    @MessageBody() { group, user }: { group: string; user: string },
+  ): void {
+    const groupState = this.groups[group];
+
+    if (!groupState || groupState.admin !== user) {
+      return;
+    }
+
+    if (!groupState.timerActive) {
+      this.server.to(group).emit('timerNotification', {
+        message: 'O cronômetro já está pausado.',
+      });
+      return;
+    }
+
+    groupState.timerActive = false;
+
+    if (groupState.intervalId) {
+      clearInterval(groupState.intervalId);
+      groupState.intervalId = undefined;
+    }
+
+    this.server.to(group).emit('timerUpdate', {
+      timerActive: false,
+      timeRemaining: groupState.timeRemaining,
+    });
+
+    this.server
+      .to(group)
+      .emit('timerNotification', { message: `${user} pausou o cronômetro.` });
+  }
+
+  @SubscribeMessage('resumeTimer')
+  handleResumeTimer(
+    @MessageBody() { group, user }: { group: string; user: string },
+  ): void {
+    if (!this.groups[group]) {
+      return;
+    }
+
+    if (this.groups[group].admin !== user) {
+      return; // Apenas o administrador pode retomar o cronômetro
+    }
+
+    if (this.groups[group].timerActive) {
+      return; // Não retoma se o cronômetro já estiver ativo
+    }
+
+    this.groups[group].timerActive = true;
+
+    this.server.to(group).emit('timerUpdate', {
+      timerActive: true,
+      timeRemaining: this.groups[group].timeRemaining,
+    });
+
+    const interval = setInterval(() => {
+      if (!this.groups[group].timerActive) {
+        clearInterval(interval); // Interrompe o cronômetro quando pausado ou parado
+        return;
+      }
+
+      this.groups[group].timeRemaining -= 1;
+
+      this.server.to(group).emit('timerUpdate', {
+        timerActive: true,
+        timeRemaining: this.groups[group].timeRemaining,
+      });
+
+      if (this.groups[group].timeRemaining <= 0) {
+        this.groups[group].timerActive = false;
+        clearInterval(interval);
+
+        // Determina o vencedor
+        const highestBid = this.groups[group].bids.reduce(
+          (max, b) => (b.amount > max.amount ? b : max),
+          {
+            user: 'Ninguém',
+            amount: 0,
+          },
+        );
+
+        this.server.to(group).emit('winnerAnnounced', highestBid);
+
+        this.server.to(group).emit('timerUpdate', {
+          timerActive: false,
+          timeRemaining: 0,
+        });
+      }
+    }, 1000); // Atualiza a cada segundo
+  }
+
+  @SubscribeMessage('stopTimer')
+  handleStopTimer(
+    @MessageBody() { group, user }: { group: string; user: string },
+  ): void {
+    const groupState = this.groups[group];
+
+    if (!groupState || groupState.admin !== user) {
+      return;
+    }
+
+    groupState.timerActive = false;
+    groupState.timeRemaining = 0;
+
+    if (groupState.intervalId) {
+      clearInterval(groupState.intervalId);
+      groupState.intervalId = undefined;
+    }
+
+    this.server.to(group).emit('timerUpdate', {
+      timerActive: false,
+      timeRemaining: 0,
+    });
+
+    this.server
+      .to(group)
+      .emit('timerNotification', { message: `${user} parou o cronômetro.` });
+  }
+
+  @SubscribeMessage('startTimer')
+  handleStartTimer(
+    @MessageBody() { group, user }: { group: string; user: string },
+  ): void {
+    const groupState = this.groups[group];
+
+    if (!groupState || groupState.admin !== user) {
+      return;
+    }
+
+    if (groupState.timerActive) {
+      return;
+    }
+
+    groupState.timerActive = true;
+    groupState.timeRemaining = 120;
+
+    this.server.to(group).emit('timerUpdate', {
+      timerActive: true,
+      timeRemaining: groupState.timeRemaining,
+    });
+
+    groupState.intervalId = setInterval(() => {
+      groupState.timeRemaining -= 1;
+
+      if (groupState.timeRemaining <= 0) {
+        clearInterval(groupState.intervalId);
+        groupState.intervalId = undefined;
+        groupState.timerActive = false;
+
+        this.server.to(group).emit('timerUpdate', {
+          timerActive: false,
+          timeRemaining: 0,
+        });
+
+        this.server
+          .to(group)
+          .emit('timerNotification', { message: 'O cronômetro terminou.' });
+      } else {
+        this.server.to(group).emit('timerUpdate', {
+          timerActive: true,
+          timeRemaining: groupState.timeRemaining,
+        });
+      }
+    }, 1000);
   }
 }
