@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
+import './WinnerHighlight.css';
 
 let socket: Socket;
 
@@ -14,6 +15,7 @@ const Home = () => {
     [],
   );
   const [bids, setBids] = useState<Bid[]>([]);
+  const [winner, setWinner] = useState<Bid | null>(null);
   const [currentMessage, setCurrentMessage] = useState('');
   const [currentBid, setCurrentBid] = useState<number>(0);
   const [username, setUsername] = useState('');
@@ -25,30 +27,29 @@ const Home = () => {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    socket = io('http://localhost:3000'); // Substitua pelo URL do servidor NestJS
+    socket = io('http://localhost:3000');
 
-    // Escuta a conexão
     socket.on('connect', () => {
       setIsConnected(true);
     });
 
-    // Escuta mensagens
     socket.on('message', (message) => {
       setMessages((prev) => [...prev, message]);
     });
 
-    // Escuta lances
     socket.on('bidsUpdate', (updatedBids: Bid[]) => {
       setBids(updatedBids);
     });
 
-    // Atualizações do timer
+    socket.on('winnerAnnounced', (highestBid: Bid) => {
+      setWinner(highestBid);
+    });
+
     socket.on('timerUpdate', ({ timerActive, timeRemaining }) => {
       setTimerActive(timerActive);
       setTimeRemaining(timeRemaining);
     });
 
-    // Confirmação de entrada no grupo
     socket.on('groupJoined', ({ group, admin, timerActive, timeRemaining }) => {
       setIsInGroup(true);
       setIsAdmin(admin === username);
@@ -56,7 +57,6 @@ const Home = () => {
       setTimeRemaining(timeRemaining);
     });
 
-    // Cleanup
     return () => {
       socket.disconnect();
     };
@@ -87,13 +87,6 @@ const Home = () => {
       alert('Por favor, escreva uma mensagem antes de enviar.');
       return;
     }
-
-    if (!isInGroup) {
-      alert('Você precisa entrar em um grupo antes de enviar mensagens.');
-      return;
-    }
-
-    // Envia a mensagem com o grupo
     socket.emit('message', { group, user: username, text: currentMessage });
     setCurrentMessage('');
   };
@@ -107,13 +100,10 @@ const Home = () => {
       alert('O lance deve ser maior que zero.');
       return;
     }
-
     if (!timerActive) {
       alert('Os lances não estão ativos para este grupo.');
       return;
     }
-
-    // Envia o lance com o grupo
     socket.emit('bid', { group, user: username, amount: currentBid });
     setCurrentBid(0);
   };
@@ -126,7 +116,6 @@ const Home = () => {
         fontFamily: 'Arial, sans-serif',
       }}
     >
-      {/* Chat e Formulário */}
       <div style={{ flex: 2, marginRight: '20px' }}>
         <h1>Chat com Grupos e Lances</h1>
         {!isConnected ? (
@@ -209,9 +198,6 @@ const Home = () => {
             value={currentMessage}
             onChange={(e) => setCurrentMessage(e.target.value)}
             style={{ padding: '10px', width: '300px', marginRight: '10px' }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') sendMessage();
-            }}
           />
           <button
             onClick={sendMessage}
@@ -226,9 +212,14 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Lista de Lances */}
       <div style={{ flex: 1 }}>
         <h2>Lances no Grupo</h2>
+        {winner && (
+          <div className="winner-container">
+            <strong>🎉 Vencedor:</strong> {winner.user} com R${' '}
+            {winner.amount.toFixed(2)}
+          </div>
+        )}
         <div
           style={{
             border: '1px solid #ccc',
@@ -248,6 +239,15 @@ const Home = () => {
             ))
           )}
         </div>
+        {!winner && (
+          <div
+            style={{ marginTop: '10px', color: '#dc3545', fontWeight: 'bold' }}
+          >
+            {bids.length > 0
+              ? `O próximo lance deve ser maior que R$ ${bids[bids.length - 1].amount.toFixed(2)}.`
+              : 'Envie o primeiro lance para iniciar.'}
+          </div>
+        )}
         <div style={{ marginTop: '20px' }}>
           <input
             type="number"

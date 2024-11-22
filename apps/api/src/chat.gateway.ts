@@ -100,7 +100,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return;
     }
 
-    // Verifica se o usuário é o administrador
     if (this.groups[group].admin !== user) {
       client.emit('error', 'Apenas o administrador pode iniciar o cronômetro.');
       return;
@@ -112,11 +111,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     this.groups[group].timerActive = true;
-    this.groups[group].timeRemaining = 120; // 2 minutos
+    this.groups[group].timeRemaining = 30; // 2 minutos
 
     this.server.to(group).emit('timerUpdate', {
       timerActive: true,
-      timeRemaining: 120,
+      timeRemaining: 30,
     });
 
     // Cronômetro
@@ -133,6 +132,18 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       if (this.groups[group].timeRemaining <= 0) {
         this.groups[group].timerActive = false;
         clearInterval(interval);
+
+        // Determina o vencedor
+        const highestBid = this.groups[group].bids.reduce(
+          (max, b) => (b.amount > max.amount ? b : max),
+          {
+            user: 'Ninguém',
+            amount: 0,
+          },
+        );
+
+        // Notifica os membros sobre o vencedor
+        this.server.to(group).emit('winnerAnnounced', highestBid);
 
         this.server.to(group).emit('timerUpdate', {
           timerActive: false,
@@ -159,8 +170,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return;
     }
 
-    if (amount <= 0) {
-      client.emit('error', 'O lance deve ser maior que zero.');
+    const highestBid = this.groups[group].bids.reduce(
+      (max, b) => Math.max(max, b.amount),
+      0,
+    );
+
+    if (amount <= highestBid) {
+      client.emit(
+        'error',
+        `O lance deve ser maior que o lance atual de R$ ${highestBid.toFixed(2)}.`,
+      );
       return;
     }
 
