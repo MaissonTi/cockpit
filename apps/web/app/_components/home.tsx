@@ -1,5 +1,4 @@
 'use client';
-
 import { useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 
@@ -11,7 +10,9 @@ const Home = () => {
   );
   const [currentMessage, setCurrentMessage] = useState('');
   const [username, setUsername] = useState('');
+  const [group, setGroup] = useState('');
   const [isConnected, setIsConnected] = useState(false);
+  const [isInGroup, setIsInGroup] = useState(false);
 
   useEffect(() => {
     // Conecta ao servidor WebSocket
@@ -28,11 +29,25 @@ const Home = () => {
       setMessages((prev) => [...prev, message]);
     });
 
+    // Confirmação de entrada no grupo
+    socket.on('groupJoined', (joinedGroup) => {
+      console.log(`Entrou no grupo: ${joinedGroup}`);
+      setIsInGroup(true);
+    });
+
     // Cleanup na desconexão
     return () => {
       socket.disconnect();
     };
   }, []);
+
+  const joinGroup = () => {
+    if (!group.trim()) {
+      alert('Por favor, insira o nome do grupo.');
+      return;
+    }
+    socket.emit('joinGroup', group);
+  };
 
   const sendMessage = () => {
     if (!username.trim()) {
@@ -43,14 +58,18 @@ const Home = () => {
       alert('Por favor, escreva uma mensagem antes de enviar.');
       return;
     }
+    if (!isInGroup) {
+      alert('Você precisa entrar em um grupo antes de enviar mensagens.');
+      return;
+    }
 
-    socket.emit('message', { user: username, text: currentMessage });
+    socket.emit('message', { group, user: username, text: currentMessage });
     setCurrentMessage('');
   };
 
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-      <h1>Chat com WebSocket</h1>
+      <h1>Chat com Grupos</h1>
       {!isConnected ? (
         <p style={{ color: 'red' }}>Conectando ao servidor...</p>
       ) : (
@@ -70,6 +89,31 @@ const Home = () => {
             display: 'block',
           }}
         />
+        <input
+          type="text"
+          placeholder="Digite o grupo"
+          value={group}
+          onChange={(e) => setGroup(e.target.value)}
+          style={{
+            padding: '10px',
+            marginBottom: '10px',
+            width: '300px',
+            display: 'block',
+          }}
+        />
+        <button
+          onClick={joinGroup}
+          style={{
+            padding: '10px 20px',
+            backgroundColor: '#28a745',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer',
+          }}
+        >
+          Entrar no Grupo
+        </button>
       </div>
 
       <div

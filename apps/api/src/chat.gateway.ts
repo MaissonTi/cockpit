@@ -6,6 +6,7 @@ import {
   OnGatewayDisconnect,
   MessageBody,
   WebSocketServer,
+  ConnectedSocket,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
@@ -26,8 +27,29 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     console.log(`Cliente desconectado: ${client.id}`);
   }
 
+  @SubscribeMessage('joinGroup')
+  handleJoinGroup(
+    @MessageBody() group: string,
+    @ConnectedSocket() client: Socket,
+  ): void {
+    client.join(group); // Adiciona o cliente a uma sala específica
+    client.emit('groupJoined', group); // Confirmação para o cliente
+    console.log(`Cliente ${client.id} entrou no grupo: ${group}`);
+  }
+
   @SubscribeMessage('message')
-  handleMessage(@MessageBody() message: { user: string; text: string }): void {
-    this.server.emit('message', message); // Reenvia mensagem para todos os clientes
+  handleMessage(
+    @MessageBody() message: { group: string; user: string; text: string },
+    @ConnectedSocket() client: Socket,
+  ): void {
+    const { group, user, text } = message;
+
+    if (!group) {
+      client.emit('error', 'Grupo não especificado.');
+      return;
+    }
+
+    // Envia a mensagem apenas para os membros da sala
+    this.server.to(group).emit('message', { user, text });
   }
 }
