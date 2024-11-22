@@ -1,5 +1,4 @@
 'use client';
-// pages/index.tsx
 import { useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 
@@ -21,15 +20,16 @@ const Home = () => {
   const [group, setGroup] = useState('');
   const [isConnected, setIsConnected] = useState(false);
   const [isInGroup, setIsInGroup] = useState(false);
+  const [timerActive, setTimerActive] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState(0);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    // Conecta ao servidor WebSocket
     socket = io('http://localhost:3000'); // Substitua pelo URL do servidor NestJS
 
     // Escuta a conexão
     socket.on('connect', () => {
       setIsConnected(true);
-      console.log('Conectado ao servidor WebSocket');
     });
 
     // Escuta mensagens
@@ -42,24 +42,40 @@ const Home = () => {
       setBids(updatedBids);
     });
 
-    // Confirmação de entrada no grupo
-    socket.on('groupJoined', (joinedGroup) => {
-      console.log(`Entrou no grupo: ${joinedGroup}`);
-      setIsInGroup(true);
+    // Atualizações do timer
+    socket.on('timerUpdate', ({ timerActive, timeRemaining }) => {
+      setTimerActive(timerActive);
+      setTimeRemaining(timeRemaining);
     });
 
-    // Cleanup na desconexão
+    // Confirmação de entrada no grupo
+    socket.on('groupJoined', ({ group, admin, timerActive, timeRemaining }) => {
+      setIsInGroup(true);
+      setIsAdmin(admin === username);
+      setTimerActive(timerActive);
+      setTimeRemaining(timeRemaining);
+    });
+
+    // Cleanup
     return () => {
       socket.disconnect();
     };
-  }, []);
+  }, [username]);
 
   const joinGroup = () => {
     if (!group.trim()) {
       alert('Por favor, insira o nome do grupo.');
       return;
     }
-    socket.emit('joinGroup', group);
+    socket.emit('joinGroup', { group, user: username });
+  };
+
+  const startTimer = () => {
+    if (!isInGroup) {
+      alert('Você precisa entrar em um grupo antes de iniciar o timer.');
+      return;
+    }
+    socket.emit('startTimer', { group, user: username });
   };
 
   const sendMessage = () => {
@@ -71,11 +87,13 @@ const Home = () => {
       alert('Por favor, escreva uma mensagem antes de enviar.');
       return;
     }
+
     if (!isInGroup) {
       alert('Você precisa entrar em um grupo antes de enviar mensagens.');
       return;
     }
 
+    // Envia a mensagem com o grupo
     socket.emit('message', { group, user: username, text: currentMessage });
     setCurrentMessage('');
   };
@@ -89,11 +107,13 @@ const Home = () => {
       alert('O lance deve ser maior que zero.');
       return;
     }
-    if (!isInGroup) {
-      alert('Você precisa entrar em um grupo antes de enviar lances.');
+
+    if (!timerActive) {
+      alert('Os lances não estão ativos para este grupo.');
       return;
     }
 
+    // Envia o lance com o grupo
     socket.emit('bid', { group, user: username, amount: currentBid });
     setCurrentBid(0);
   };
@@ -121,24 +141,14 @@ const Home = () => {
             placeholder="Digite seu nome"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            style={{
-              padding: '10px',
-              marginBottom: '10px',
-              width: '300px',
-              display: 'block',
-            }}
+            style={{ padding: '10px', marginBottom: '10px', width: '300px' }}
           />
           <input
             type="text"
             placeholder="Digite o grupo"
             value={group}
             onChange={(e) => setGroup(e.target.value)}
-            style={{
-              padding: '10px',
-              marginBottom: '10px',
-              width: '300px',
-              display: 'block',
-            }}
+            style={{ padding: '10px', marginBottom: '10px', width: '300px' }}
           />
           <button
             onClick={joinGroup}
@@ -146,13 +156,29 @@ const Home = () => {
               padding: '10px 20px',
               backgroundColor: '#28a745',
               color: '#fff',
-              border: 'none',
-              borderRadius: '5px',
-              cursor: 'pointer',
             }}
           >
             Entrar no Grupo
           </button>
+        </div>
+
+        <div>
+          <h2>
+            Tempo Restante:{' '}
+            {timerActive ? `${timeRemaining}s` : 'Lances encerrados'}
+          </h2>
+          {isInGroup && isAdmin && !timerActive && (
+            <button
+              onClick={startTimer}
+              style={{
+                padding: '10px 20px',
+                backgroundColor: '#007bff',
+                color: '#fff',
+              }}
+            >
+              Iniciar Lances (2 minutos)
+            </button>
+          )}
         </div>
 
         <div
@@ -162,7 +188,7 @@ const Home = () => {
             padding: '10px',
             height: '300px',
             overflowY: 'scroll',
-            marginBottom: '20px',
+            marginTop: '20px',
           }}
         >
           {messages.length === 0 ? (
@@ -176,17 +202,13 @@ const Home = () => {
           )}
         </div>
 
-        <div>
+        <div style={{ marginTop: '20px' }}>
           <input
             type="text"
             placeholder="Digite sua mensagem"
             value={currentMessage}
             onChange={(e) => setCurrentMessage(e.target.value)}
-            style={{
-              padding: '10px',
-              width: '300px',
-              marginRight: '10px',
-            }}
+            style={{ padding: '10px', width: '300px', marginRight: '10px' }}
             onKeyDown={(e) => {
               if (e.key === 'Enter') sendMessage();
             }}
@@ -197,9 +219,6 @@ const Home = () => {
               padding: '10px 20px',
               backgroundColor: '#007bff',
               color: '#fff',
-              border: 'none',
-              borderRadius: '5px',
-              cursor: 'pointer',
             }}
           >
             Enviar
@@ -235,22 +254,17 @@ const Home = () => {
             placeholder="Digite seu lance"
             value={currentBid}
             onChange={(e) => setCurrentBid(parseFloat(e.target.value))}
-            style={{
-              padding: '10px',
-              width: '200px',
-              marginRight: '10px',
-            }}
+            style={{ padding: '10px', width: '200px', marginRight: '10px' }}
           />
           <button
             onClick={placeBid}
             style={{
               padding: '10px 20px',
-              backgroundColor: '#ffc107',
-              color: '#000',
-              border: 'none',
-              borderRadius: '5px',
-              cursor: 'pointer',
+              backgroundColor: timerActive ? '#ffc107' : '#ccc',
+              color: timerActive ? '#000' : '#666',
+              cursor: timerActive ? 'pointer' : 'not-allowed',
             }}
+            disabled={!timerActive}
           >
             Dar Lance
           </button>

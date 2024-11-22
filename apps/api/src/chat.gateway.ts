@@ -15,6 +15,13 @@ interface Bid {
   amount: number;
 }
 
+interface GroupState {
+  bids: Bid[];
+  timerActive: boolean;
+  timeRemaining: number; // Tempo restante em segundos
+  admin: string; // Nome do administrador do grupo
+}
+
 @WebSocketGateway({
   cors: {
     origin: '*', // Permite todas as origens, ajuste conforme necessário
@@ -24,8 +31,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
-  // Armazena lances por grupo
-  private bids: Record<string, Bid[]> = {};
+  // Estado dos grupos
+  private groups: Record<string, GroupState> = {};
 
   handleConnection(client: Socket) {
     console.log(`Cliente conectado: ${client.id}`);
@@ -33,19 +40,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   handleDisconnect(client: Socket) {
     console.log(`Cliente desconectado: ${client.id}`);
-  }
-
-  @SubscribeMessage('joinGroup')
-  handleJoinGroup(
-    @MessageBody() group: string,
-    @ConnectedSocket() client: Socket,
-  ): void {
-    client.join(group); // Adiciona o cliente a uma sala específica
-    client.emit('groupJoined', group); // Confirmação para o cliente
-    console.log(`Cliente ${client.id} entrou no grupo: ${group}`);
-
-    // Envia os lances atuais do grupo ao cliente
-    client.emit('bidsUpdate', this.bids[group] || []);
   }
 
   @SubscribeMessage('message')
@@ -64,6 +58,90 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.server.to(group).emit('message', { user, text });
   }
 
+  @SubscribeMessage('joinGroup')
+  handleJoinGroup(
+    @MessageBody() { group, user }: { group: string; user: string },
+    @ConnectedSocket() client: Socket,
+  ): void {
+    client.join(group);
+
+    // Inicializa o grupo se ainda não existir
+    if (!this.groups[group]) {
+      this.groups[group] = {
+        bids: [],
+        timerActive: false,
+        timeRemaining: 0,
+        admin: user, // O primeiro usuário a criar o grupo torna-se administrador
+      };
+    }
+
+    // Envia ao cliente os detalhes do grupo
+    client.emit('groupJoined', {
+      group,
+      admin: this.groups[group].admin,
+      timerActive: this.groups[group].timerActive,
+      timeRemaining: this.groups[group].timeRemaining,
+    });
+
+    client.emit('bidsUpdate', this.groups[group].bids); // Envia os lances atuais
+    client.emit('timerUpdate', {
+      timerActive: this.groups[group].timerActive,
+      timeRemaining: this.groups[group].timeRemaining,
+    });
+  }
+
+  @SubscribeMessage('startTimer')
+  handleStartTimer(
+    @MessageBody() { group, user }: { group: string; user: string },
+    @ConnectedSocket() client: Socket,
+  ): void {
+    if (!this.groups[group]) {
+      client.emit('error', 'Grupo não encontrado.');
+      return;
+    }
+
+    // Verifica se o usuário é o administrador
+    if (this.groups[group].admin !== user) {
+      client.emit('error', 'Apenas o administrador pode iniciar o cronômetro.');
+      return;
+    }
+
+    if (this.groups[group].timerActive) {
+      client.emit('error', 'O cronômetro já está ativo.');
+      return;
+    }
+
+    this.groups[group].timerActive = true;
+    this.groups[group].timeRemaining = 120; // 2 minutos
+
+    this.server.to(group).emit('timerUpdate', {
+      timerActive: true,
+      timeRemaining: 120,
+    });
+
+    // Cronômetro
+    const interval = setInterval(() => {
+      this.groups[group].timeRemaining -= 1;
+
+      // Notifica os clientes com o tempo restante
+      this.server.to(group).emit('timerUpdate', {
+        timerActive: true,
+        timeRemaining: this.groups[group].timeRemaining,
+      });
+
+      // Verifica se o tempo acabou
+      if (this.groups[group].timeRemaining <= 0) {
+        this.groups[group].timerActive = false;
+        clearInterval(interval);
+
+        this.server.to(group).emit('timerUpdate', {
+          timerActive: false,
+          timeRemaining: 0,
+        });
+      }
+    }, 1000); // Atualiza a cada segundo
+  }
+
   @SubscribeMessage('bid')
   handleBid(
     @MessageBody() bid: { group: string; user: string; amount: number },
@@ -71,8 +149,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ): void {
     const { group, user, amount } = bid;
 
-    if (!group) {
-      client.emit('error', 'Grupo não especificado.');
+    if (!this.groups[group]) {
+      client.emit('error', 'Grupo não encontrado.');
+      return;
+    }
+
+    if (!this.groups[group].timerActive) {
+      client.emit('error', 'Os lances não estão ativos para este grupo.');
       return;
     }
 
@@ -82,12 +165,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     // Adiciona o lance ao grupo
-    if (!this.bids[group]) {
-      this.bids[group] = [];
-    }
-    this.bids[group].push({ user, amount });
+    this.groups[group].bids.push({ user, amount });
 
     // Atualiza todos os membros do grupo com os lances mais recentes
-    this.server.to(group).emit('bidsUpdate', this.bids[group]);
+    this.server.to(group).emit('bidsUpdate', this.groups[group].bids);
   }
 }
