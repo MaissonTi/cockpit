@@ -1,0 +1,23 @@
+import { {{ pascalCase usecase_name }}Model } from '@/domain/models/{{ kebabCase usecase_name }}.model';
+
+type Presenter<T> = {
+  get: () => T;
+};
+
+export class {{ pascalCase usecase_name }}Presenter {
+  static toHTTP<T, K extends {{ pascalCase usecase_name }}Model = {{ pascalCase usecase_name }}Model>(data: K): Presenter<T> {
+    return {
+      get: () => {{ pascalCase usecase_name }}Presenter.get<T>(data),
+    };
+  }
+
+  protected static get<T>(data: {{ pascalCase usecase_name }}Model): T | null {
+    return (
+      data &&
+      ({
+        id: data.id,
+        name: data.name,
+      } as T)
+    );
+  }
+}

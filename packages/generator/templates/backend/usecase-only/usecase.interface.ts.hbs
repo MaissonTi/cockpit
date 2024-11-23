@@ -1,0 +1,8 @@
+export namespace I{{ pascalCase usecase_name }}UseCase {
+  export type Input = { value: string };
+  export type Output = string;
+}
+
+export interface I{{ pascalCase usecase_name }}UseCase {
+  execute(data: I{{ pascalCase usecase_name }}UseCase.Input): Promise<I{{ pascalCase usecase_name }}UseCase.Output>;
+}

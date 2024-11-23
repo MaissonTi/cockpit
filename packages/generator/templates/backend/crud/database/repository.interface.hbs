@@ -1,0 +1,15 @@
+import { {{ pascalCase usecase_name }}Model } from '@/domain/models/{{ kebabCase usecase_name }}.model';
+import { Paginated, Pagination } from '../types/pagination.types';
+
+export namespace I{{ pascalCase usecase_name }}Repository {
+  export type paramsCreate = Omit<{{ pascalCase usecase_name }}Model, 'id' | 'createdAt' | 'updatedAt'>;
+  export type paramsUpdate = Partial<Omit<{{ pascalCase usecase_name }}Model, 'id' | 'createdAt' | 'updatedAt'>>;
+}
+
+export interface I{{ pascalCase usecase_name }}Repository {
+  find(id: string): Promise<{{ pascalCase usecase_name }}Model | null>;
+  create(data: I{{ pascalCase usecase_name }}Repository.paramsCreate): Promise<{{ pascalCase usecase_name }}Model>;
+  update(id: string, data: I{{ pascalCase usecase_name }}Repository.paramsUpdate): Promise<{{ pascalCase usecase_name }}Model>;
+  delete(id: string): Promise<void>;
+  list(where: Partial<{{ pascalCase usecase_name }}Model>, pagination?: Pagination): Promise<Paginated<{{ pascalCase usecase_name }}Model>>;
+}
