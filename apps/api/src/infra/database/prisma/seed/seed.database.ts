@@ -14,6 +14,7 @@ async function seed() {
       name: 'Admin',
       email: 'admin@gmail.com',
       password: passwordHash,
+      role: 'ADMIN',
     },
   });
 
@@ -26,6 +27,31 @@ async function seed() {
           name: faker.person.fullName(),
           email: faker.internet.email(),
           password: passwordHash,
+        },
+      }),
+    );
+  });
+
+  await Promise.all(promise);
+
+  await seedProcess();
+}
+
+async function seedProcess() {
+  const promise = [];
+
+  Array.from({ length: 3 }).map(async () => {
+    promise.push(
+      prisma.processDispute.create({
+        data: {
+          name: faker.music.album(),
+          batch: {
+            createMany: {
+              data: Array.from({ length: 3 }).map(() => ({
+                name: faker.music.genre(),
+              })),
+            },
+          },
         },
       }),
     );

@@ -41,15 +41,15 @@ model ProcessDispute { // Disputa
 model ProcessDisputeUsers { // Disputa
   id       String   @id @default(uuid())
   userId   String   @map("user_id") 
-  processDisputeId    String       @map("process_dispute_id")
+  processDisputeId    String       @map("process_disputes_id")
 
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime? @updatedAt @map("updated_at")
 
-  processDispute ProcessDispute  @relation("relation_users_process_dispute", fields: [processDisputeId], references: [id], onDelete: Cascade, map: "process_dispute_id_key")
+  processDispute ProcessDispute  @relation("relation_users_process_dispute", fields: [processDisputeId], references: [id], onDelete: Cascade, map: "process_disputes_id_key")
   user User  @relation("relation_users_process_dispute", fields: [userId], references: [id], onDelete: Cascade, map: "user_id_key") 
 
-  @@map("process_dispute_users")  
+  @@map("process_disputes_users")  
 }
 
 model Batch { // Lote
@@ -61,12 +61,12 @@ model Batch { // Lote
   winnerValue Float? @default(0.0) @map("winner_value")
   
 
-  processDisputeId    String       @map("process_dispute_id")
+  processDisputeId    String       @map("process_disputes_id")
 
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime? @updatedAt @map("updated_at")
 
-  processDispute ProcessDispute  @relation("relation_batch_process_dispute", fields: [processDisputeId], references: [id], onDelete: Cascade, map: "process_dispute_id_key")
+  processDispute ProcessDispute  @relation("relation_batch_process_dispute", fields: [processDisputeId], references: [id], onDelete: Cascade, map: "process_disputes_id_key")
   batchThrow BatchThrow[] @relation("relation_batch_throw")
   
   @@map("batch")
