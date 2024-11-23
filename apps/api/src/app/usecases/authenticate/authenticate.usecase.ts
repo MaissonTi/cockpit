@@ -10,14 +10,20 @@ export class AuthenticateUseCase implements IAuthenticateUseCase {
     private readonly bcryptHasher: IBcryptHasher,
     private readonly jwtEncrypter: IJwtEncrypter,
   ) {}
-  async execute({ email, password }: IAuthenticateUseCase.Input): Promise<IAuthenticateUseCase.Output> {
+  async execute({
+    email,
+    password,
+  }: IAuthenticateUseCase.Input): Promise<IAuthenticateUseCase.Output> {
     const user = await this.userRepository.findByEmail(email);
 
     if (!user) {
       throw new BadRequestException(`Credentials are not valid`);
     }
 
-    const isPasswordValid = await this.bcryptHasher.compare(password, user.password);
+    const isPasswordValid = await this.bcryptHasher.compare(
+      password,
+      user.password,
+    );
 
     if (!isPasswordValid) {
       throw new BadRequestException('Credentials are not valid');
@@ -25,8 +31,13 @@ export class AuthenticateUseCase implements IAuthenticateUseCase {
 
     const accessToken = await this.jwtEncrypter.encrypt({
       sub: user.id.toString(),
+      username: user.name,
+      role: user.role,
     });
 
-    return { user: { name: user.name, email: user.email }, access_token: accessToken };
+    return {
+      user: { name: user.name, email: user.email },
+      access_token: accessToken,
+    };
   }
 }

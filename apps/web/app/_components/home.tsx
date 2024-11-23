@@ -29,8 +29,15 @@ const Home = () => {
   const [notification, setNotification] = useState<string | null>(null);
   const [groupWillBeDeleted, setGroupWillBeDeleted] = useState(false);
 
+  const token =
+    'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiMjllMmY1YS01ZjQzLTQ0MmItYTNjZC00NzM1MGIzZDBkMjgiLCJ1c2VybmFtZSI6IkFkbWluIiwicm9sZSI6IlNUVURFTlQiLCJpYXQiOjE3MzIzMjc1NDB9.E4gUr1n9yspRZU9qV4l1Ozl-EwBevIpiufmf-SK6yfvD3onHiWw8GbvV2auISxrvJimGnLuVhpbYpsHoaZON2wYnajIouys_n2TxanFmqEU9FN3uIYlZgmhXMKnNlpaxP_wlPOVuZelbjJ-efLFFTXagmbGgz3Vy9bSlgVI5d_qqFiEsxfcdvJqTVDYozfbwZJcvKOq1UCLaNnzj5hzdBB8hQbs0aVLaugKwQtfpFc81sD4u_oWZFWE9zcGcCf7FNr_XXWHkGdsLKdv6g0xkMvi2GaF4vNjkowxKa8UbXFpKN6J1gWddR9vyqtxzKoC7DHBGb3lhopu48mJ0fVba3w';
+
   useEffect(() => {
-    socket = io('http://localhost:3000');
+    socket = io('http://localhost:3000', {
+      extraHeaders: {
+        Authorization: token,
+      },
+    });
 
     socket.on('connect', () => {
       setIsConnected(true);

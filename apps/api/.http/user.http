@@ -1,0 +1,66 @@
+@baseUrl = http://localhost:3000
+
+@authToken = {{authenticate.response.body.access_token}}
+
+###
+
+# @name authenticate
+POST {{baseUrl}}/sessions
+Content-Type: application/json
+
+{
+  "email": "admin@gmail.com",
+  "password": "123456"
+}
+
+###
+
+# @name profile
+GET {{baseUrl}}/sessions
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+###
+
+# @name create_user
+POST {{baseUrl}}/users
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "name": "Admin",
+  "email": "admin@gmail.com",
+  "password": "123456"
+}
+
+###
+
+# @name list_user
+GET {{baseUrl}}/users?currentPage=1&perPage=10&email=yahoo
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+###
+
+# @name update_user
+PUT {{baseUrl}}/users/af91fca5-6bf7-425c-8c1c-b25cfa28099b
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "name": "Maisson Saraiva"
+}
+
+###
+
+# @name delete_user
+DELETE {{baseUrl}}/users/637f9b56-06e1-48d0-9909-cd50ce22b175
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+###
+
+# @name get_user
+GET {{baseUrl}}/users/b29e2f5a-5f43-442b-a3cd-47350b3d0d28
+Content-Type: application/json
+Authorization: Bearer {{authToken}}

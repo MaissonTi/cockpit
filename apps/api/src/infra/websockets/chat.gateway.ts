@@ -1,4 +1,5 @@
 // src/chat.gateway.ts
+import { UseGuards } from '@nestjs/common';
 import {
   SubscribeMessage,
   WebSocketGateway,
@@ -7,8 +8,11 @@ import {
   MessageBody,
   WebSocketServer,
   ConnectedSocket,
+  WsException,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { JwtService } from '@nestjs/jwt';
+import { EnvService } from '../env/env.service';
 
 interface Bid {
   user: string;
@@ -32,6 +36,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
+  constructor(
+    private jwtService: JwtService,
+    private config: EnvService,
+  ) {}
+
   // Estado dos grupos
   private groups: Record<
     string,
@@ -45,8 +54,27 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   > = {};
 
-  handleConnection(client: Socket) {
-    console.log(`Cliente conectado: ${client.id}`);
+  async handleConnection(client: Socket) {
+    const publicKey = this.config.get('JWT_PUBLIC_KEY');
+
+    try {
+      const token = client.handshake.headers.authorization;
+      if (!token) {
+        throw new WsException('Token não fornecido');
+      }
+
+      const decoded = this.jwtService.verify(token, {
+        publicKey: publicKey,
+        secret: Buffer.from(publicKey, 'base64'),
+        algorithms: ['RS256'],
+      });
+
+      client.data.user = decoded;
+      console.log(`Usuário conectado: ${decoded.username}`);
+    } catch (error) {
+      console.log('Conexão recusada. Token inválido.');
+      client.disconnect();
+    }
   }
 
   handleDisconnect(client: Socket) {
@@ -58,6 +86,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() message: { group: string; user: string; text: string },
     @ConnectedSocket() client: Socket,
   ): void {
+    const userId = client.handshake.auth?.userId;
+
     const { group, user, text } = message;
 
     if (!group) {
