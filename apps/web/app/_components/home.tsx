@@ -354,6 +354,16 @@ const Home = () => {
             messages.map((msg, idx) => (
               <div key={idx} style={{ marginBottom: '10px' }}>
                 <strong>{msg.user}:</strong> {msg.text}
+                <span
+                  style={{
+                    fontSize: '0.8em',
+                    color: '#888',
+                    marginLeft: '10px',
+                  }}
+                >
+                  11/12/2021 10:00
+                  {/* {new Date(msg.createdAt).toLocaleString()} */}
+                </span>
               </div>
             ))
           )}

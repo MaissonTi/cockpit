@@ -1,9 +1,13 @@
 {
   "name": "@repo/generator",
   "version": "1.0.0",
+  "private": true,
   "main": "index.js",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
-    "gen": "cross-env NODE_OPTIONS=\"--import tsx\" plop --plopfile=plopfile.ts"
+    "gencc": "NODE_OPTIONS=\"--import tsx\" plop --plopfile=plopfile.ts"
   },
   "keywords": [],
   "author": "",

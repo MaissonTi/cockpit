@@ -7,46 +7,83 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Account {
-  id        Int       @id @default(autoincrement())
-  name      String
-  document  String    @unique
-  balance   Float     @default(0.0)
-  createdAt DateTime? @default(now()) @map("created_at")
-
-  transactionsFrom Transaction[] @relation("from_account_relation")
-  transactionsTo   Transaction[] @relation("to_account_relation")
-
-  @@map("account")
-}
-
-model Transaction {
-  id               Int       @id @default(autoincrement())
-  fromAccountId    Int       @map("from_account_id")
-  toAccountId      Int?      @map("to_account_id")
-  typeTransactions Int       @map("type_transactions") // DEPOSIT = 0 | WITHDRAW = 1 | TRANSFER = 2 | PAYMENT = 3
-  typeOperations   Int       @map("type_operations") // ADD = 0 | REMOVE = 1
-  value            Float
-  oldBalance       Float     @default(0.0) @map("old_balance")
-  newBalance       Float     @default(0.0) @map("new_balance")
-  description      String?
-  createdAt        DateTime? @default(now()) @map("created_at")
-
-  fromAccount Account  @relation("from_account_relation", fields: [fromAccountId], references: [id], onDelete: Cascade, map: "from_account_id_key")
-  toAccount   Account? @relation("to_account_relation", fields: [toAccountId], references: [id], onDelete: SetNull, map: "to_account_id_key")
-
-  @@map("transaction")
-}
-
 model User {
   id       String @id @default(uuid())
   name     String
   email    String @unique
   password String
-  role     String @default("STUDENT")
+  role     String @default("COMMON")
 
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime? @updatedAt @map("updated_at")
 
+  processDisputeUsers ProcessDisputeUsers[] @relation("relation_users_process_dispute")
+
   @@map("users")
+}
+
+model ProcessDispute { // Disputa
+  id       String   @id @default(uuid())
+  name     String
+  status   String   @default("PENDING")
+  isOpen   Boolean  @default(false) @map("is_open")
+  adminId  String?   @map("admin_id") 
+
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime? @updatedAt @map("updated_at")
+
+  @@map("process_disputes")
+
+  batch Batch[] @relation("relation_batch_process_dispute")
+  processDisputeUsers ProcessDisputeUsers[] @relation("relation_users_process_dispute")
+}
+
+model ProcessDisputeUsers { // Disputa
+  id       String   @id @default(uuid())
+  userId   String   @map("user_id") 
+  processDisputeId    String       @map("process_dispute_id")
+
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime? @updatedAt @map("updated_at")
+
+  processDispute ProcessDispute  @relation("relation_users_process_dispute", fields: [processDisputeId], references: [id], onDelete: Cascade, map: "process_dispute_id_key")
+  user User  @relation("relation_users_process_dispute", fields: [userId], references: [id], onDelete: Cascade, map: "user_id_key") 
+
+  @@map("process_dispute_users")  
+}
+
+model Batch { // Lote
+  id       String   @id @default(uuid())
+  name     String
+  status   String   @default("PENDING")
+  durationTime Int  @default(120) @map("duration_time") // 120 = 2 minutos
+  winnerUserId String? @map("winner_user_id")
+  winnerValue Float? @default(0.0) @map("winner_value")
+  
+
+  processDisputeId    String       @map("process_dispute_id")
+
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime? @updatedAt @map("updated_at")
+
+  processDispute ProcessDispute  @relation("relation_batch_process_dispute", fields: [processDisputeId], references: [id], onDelete: Cascade, map: "process_dispute_id_key")
+  batchThrow BatchThrow[] @relation("relation_batch_throw")
+  
+  @@map("batch")
+}
+
+model BatchThrow { // Lance do lote
+  id       String   @id @default(uuid())
+  name     String
+  status   String   @default("PENDING")
+  batchId    String       @map("batch_id")
+  userId String? @map("user_id")
+  value Float? @default(0.0)
+
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime? @updatedAt @map("updated_at")
+
+  Batch Batch  @relation("relation_batch_throw", fields: [batchId], references: [id], onDelete: Cascade, map: "batch_id_key")
+
+  @@map("batch_throw")
 }

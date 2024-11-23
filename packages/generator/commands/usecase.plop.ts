@@ -7,7 +7,7 @@ const ROOT_MONOREPO = path.resolve("..", "..");
 export default function (plop: NodePlopAPI) {
 
 	plop.setGenerator('Create UseCase', {
-		description: 'Create a new UseCase package inside `./api` folder',
+		description: 'Create a new UseCase package inside api folder',
 		prompts: [
       {
         type: "input",

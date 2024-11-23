@@ -11,7 +11,8 @@
     "test": "turbo test",
     "test:e2e": "turbo test:e2e",
     "lint": "turbo lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "gencc": "turbo gencc"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
