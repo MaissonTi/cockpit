@@ -1,27 +1,29 @@
 @baseUrl = http://localhost:3333
 
-@authToken = 
+@authToken = {{authenticate.response.body.access_token}}
+
+###
 
 # @name authenticate
-POST /sessions
+POST {{baseUrl}}/sessions
 Content-Type: application/json
 
 {
-  "email": "admin@gmail.com.br",
+  "email": "admin@gmail.com",
   "password": "123456"
 }
 
 ###
 
 # @name list_process_dispute
-GET /process-dispute?currentPage=1&perPage=20
+GET {{baseUrl}}/process-dispute?currentPage=1&perPage=20
 Content-Type: application/json
 Authorization: Bearer 
 
 ###
 
 # @name create_process_dispute
-POST /process-dispute
+POST {{baseUrl}}/process-dispute
 Content-Type: application/json
 Authorization: Bearer 
 
@@ -32,7 +34,7 @@ Authorization: Bearer
 ###
 
 # @name update_process_dispute
-PUT /process-dispute/af91fca5-6bf7-425c-8c1c-b25cfa28099b
+PUT {{baseUrl}}/process-dispute/af91fca5-6bf7-425c-8c1c-b25cfa28099b
 Content-Type: application/json
 Authorization: Bearer 
 
@@ -43,13 +45,13 @@ Authorization: Bearer
 ###
 
 # @name delete_process_dispute
-DELETE /process-dispute/af91fca5-6bf7-425c-8c1c-b25cfa28099b
+DELETE {{baseUrl}}/process-dispute/af91fca5-6bf7-425c-8c1c-b25cfa28099b
 Content-Type: application/json
 Authorization: Bearer 
 
 ###
 
 # @name get_process_dispute
-GET /process-dispute/9b219b88-db1a-4df8-8cb4-c03e2e540b4f
+GET {{baseUrl}}/process-dispute/9b219b88-db1a-4df8-8cb4-c03e2e540b4f
 Content-Type: application/json
 Authorization: Bearer 

@@ -5,7 +5,9 @@ type Presenter<T> = {
 };
 
 export class ProcessDisputePresenter {
-  static toHTTP<T, K extends ProcessDisputeModel = ProcessDisputeModel>(data: K): Presenter<T> {
+  static toHTTP<T, K extends ProcessDisputeModel = ProcessDisputeModel>(
+    data: K,
+  ): Presenter<T> {
     return {
       get: () => ProcessDisputePresenter.get<T>(data),
     };
@@ -17,6 +19,7 @@ export class ProcessDisputePresenter {
       ({
         id: data.id,
         name: data.name,
+        ...data,
       } as T)
     );
   }

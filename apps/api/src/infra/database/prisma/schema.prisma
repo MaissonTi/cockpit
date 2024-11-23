@@ -25,8 +25,8 @@ model User {
 model ProcessDispute { // Disputa
   id       String   @id @default(uuid())
   name     String
-  status   String   @default("PENDING")
-  isOpen   Boolean  @default(false) @map("is_open")
+  status   String?   @default("PENDING")
+  isOpen   Boolean?  @default(false) @map("is_open")
   adminId  String?   @map("admin_id") 
 
   createdAt    DateTime  @default(now()) @map("created_at")
@@ -58,9 +58,7 @@ model Batch { // Lote
   status   String   @default("PENDING")
   durationTime Int  @default(120) @map("duration_time") // 120 = 2 minutos
   winnerUserId String? @map("winner_user_id")
-  winnerValue Float? @default(0.0) @map("winner_value")
-  
-
+  winnerValue Float? @default(0.0) @map("winner_value") 
   processDisputeId    String       @map("process_disputes_id")
 
   createdAt    DateTime  @default(now()) @map("created_at")

@@ -14,7 +14,9 @@ export class CreateUserUseCase implements ICreateUserUseCase {
     const exists = await this.userRepository.findByEmail(data.email);
 
     if (exists) {
-      throw new BadRequestException(`User already exists with this email ${data.email}.`);
+      throw new BadRequestException(
+        `User already exists with this email ${data.email}.`,
+      );
     }
 
     const hashedPassword = await this.bcryptHasher.hash(data.password);
@@ -22,7 +24,7 @@ export class CreateUserUseCase implements ICreateUserUseCase {
     return this.userRepository.create({
       ...data,
       password: hashedPassword,
-      role: UserRoleEnum.STUDENT,
+      role: UserRoleEnum.COMMON,
     });
   }
 }

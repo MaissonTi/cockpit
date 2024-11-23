@@ -3,9 +3,16 @@ import { IProcessDisputeRepository } from '@/domain/protocols/database/repositor
 import { IUpdateProcessDisputeUseCase } from '@/domain/usecases/process-dispute/update-process-dispute.usecase.interface';
 import { NotFoundException } from '@nestjs/common';
 
-export class UpdateProcessDisputeUseCase implements IUpdateProcessDisputeUseCase {
-  constructor(private readonly processDisputeRepository: IProcessDisputeRepository) {}
-  async execute(id: string, data: IUpdateProcessDisputeUseCase.Input): Promise<ProcessDisputeModel> {
+export class UpdateProcessDisputeUseCase
+  implements IUpdateProcessDisputeUseCase
+{
+  constructor(
+    private readonly processDisputeRepository: IProcessDisputeRepository,
+  ) {}
+  async execute(
+    id: string,
+    data: IUpdateProcessDisputeUseCase.Input,
+  ): Promise<ProcessDisputeModel> {
     const result = await this.processDisputeRepository.find(id);
 
     if (!result) {

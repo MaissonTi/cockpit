@@ -2,9 +2,8 @@ import { ProcessDisputeModel } from '@/domain/models/process-dispute.model';
 import { Paginated, Pagination } from '../types/pagination.types';
 
 export namespace IProcessDisputeRepository {
-  export type paramsCreate = Omit<
-    ProcessDisputeModel,
-    'id' | 'createdAt' | 'updatedAt'
+  export type paramsCreate = Partial<
+    Omit<ProcessDisputeModel, 'id' | 'createdAt' | 'updatedAt'>
   >;
   export type paramsUpdate = Partial<
     Omit<ProcessDisputeModel, 'id' | 'createdAt' | 'updatedAt'>

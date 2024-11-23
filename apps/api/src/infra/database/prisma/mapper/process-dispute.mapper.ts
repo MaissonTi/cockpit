@@ -2,8 +2,9 @@ import { ProcessDisputeModel } from '@/domain/models/process-dispute.model';
 import { ProcessDispute as ProcessDisputePrisma } from '@prisma/client';
 
 export class ProcessDisputeMapper {
-  protected static objectModel(data: ProcessDisputePrisma) {
+  protected static objectModel(data: ProcessDisputePrisma): any {
     return {
+      ...data,
       id: data.id,
       name: data.name,
       createdAt: data.createdAt,
@@ -11,8 +12,9 @@ export class ProcessDisputeMapper {
     };
   }
 
-  protected static objectPrisma(data: ProcessDisputeModel) {
+  protected static objectPrisma(data: ProcessDisputeModel): any {
     return {
+      ...data,
       id: data.id,
       name: data.name,
       createdAt: data.createdAt,

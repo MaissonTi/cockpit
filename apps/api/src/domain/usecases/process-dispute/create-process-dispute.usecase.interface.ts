@@ -1,7 +1,7 @@
 import { ProcessDisputeModel } from '@/domain/models/process-dispute.model';
 
 export namespace ICreateProcessDisputeUseCase {
-  export type Input = Omit<ProcessDisputeModel, 'id'>;
+  export type Input = Partial<Omit<ProcessDisputeModel, 'id'>>;
   export type Output = ProcessDisputeModel;
 }
 
