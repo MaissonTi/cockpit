@@ -1,6 +1,12 @@
-import NextAuth, { AuthOptions } from 'next-auth';
+import NextAuth, { AuthOptions, User } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider, { GoogleProfile } from 'next-auth/providers/google';
+
+declare module 'next-auth' {
+  interface User {
+    access_token?: string;
+  }
+}
 
 export const authOptions: AuthOptions = {
   session: {
@@ -10,6 +16,7 @@ export const authOptions: AuthOptions = {
     signIn: '/auth/signin',
     error: '/auth/signin',
   },
+
   providers: [
     CredentialsProvider({
       name: 'credentials',
@@ -18,7 +25,7 @@ export const authOptions: AuthOptions = {
         password: {},
       },
       async authorize(credentials) {
-        const res = await fetch('http://localhost:3000/sessions', {
+        const res = await fetch('http://localhost:3333/sessions', {
           method: 'POST',
           body: JSON.stringify({
             email: credentials?.email,
@@ -27,7 +34,7 @@ export const authOptions: AuthOptions = {
           headers: { 'Content-Type': 'application/json' },
         });
         const { user, access_token } = (await res.json()) as {
-          user: any;
+          user: User;
           access_token: string;
         };
 
@@ -63,32 +70,31 @@ export const authOptions: AuthOptions = {
     }),
   ],
   events: {
-    signIn: async (message) => {
-      //console.log('signIn-signIn -----------------------------------------------------', message)
-    },
+    signIn: async (message) => {},
   },
   callbacks: {
     async signIn(data) {
-      //console.log('signIn -----------------------------------------------------')
       return true;
     },
     async jwt({ token, account, user }) {
-      //console.log('jwt ------------------------------------------')
       if (account?.type === 'credentials') {
         token.accessToken = user?.access_token;
+        token.user = user;
       }
-
       // if(account?.type === 'google') {
       //   token.accessToken = account?.accessToken;
       // }
-
-      //console.log('jwt', token, account, user)
-
       return token;
     },
-    async session(data) {
-      //console.log('session ------------------------------------------')
-      return data.session;
+    async session({ session, token }) {
+      if (token?.user) {
+        return {
+          ...session,
+          ...token?.user,
+          isAdmin: token?.user?.role === 'ADMIN',
+        };
+      }
+      return session;
     },
   },
 };

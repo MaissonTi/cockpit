@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { Home, Dock, Users } from "lucide-react";
+import { Home, Dock, Users, Cpu } from 'lucide-react';
 
-import { DarkMode } from "./dark-mode";
-import { Separator } from "@radix-ui/react-separator";
-import { NavLink } from "./nav-link";
-import { AccountMenu } from "./account-menu";
+import { DarkMode } from './dark-mode';
+import { Separator } from '@radix-ui/react-separator';
+import { NavLink } from './nav-link';
+import { AccountMenu } from './account-menu';
 
 export function Header() {
   return (
@@ -23,6 +23,10 @@ export function Header() {
           <NavLink href="/users">
             <Users className="h-4 w-4" />
             Users
+          </NavLink>
+          <NavLink href="/process">
+            <Cpu className="h-4 w-4" />
+            Process
           </NavLink>
         </nav>
 

@@ -1,7 +1,6 @@
-import { Settings, ChevronDown, LogOut, User } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import { Settings, LogOut, User } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,18 +9,16 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Skeleton } from "@/components/ui/skeleton";
-import { signOut } from "@/actions/auth.action";
-import { useSession } from "next-auth/react";
+} from '@/components/ui/dropdown-menu';
+import { Skeleton } from '@/components/ui/skeleton';
+import { signOut } from '@/actions/auth.action';
+import { useSession } from 'next-auth/react';
 
 export function AccountMenu() {
   const { data: session } = useSession();
 
-  const isLoadingManagedRestaurant = false;
-  const managedRestaurant = { name: "Managed Restaurant" };
   const isLoadingProfile = false;
-  const profile = { name: "Profile", role: "admin" };
+
   const handleSignOut = async () => {
     await signOut();
   };
@@ -47,9 +44,9 @@ export function AccountMenu() {
               </div>
             ) : (
               <>
-                {profile?.name}
+                {session?.name}
                 <span className="text-xs font-normal text-muted-foreground">
-                  {profile?.role}
+                  {session?.role}
                 </span>
               </>
             )}
