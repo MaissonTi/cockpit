@@ -20,13 +20,15 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
     : 'self-start bg-gray-100 text-black animate-slideInLeft';
 
   return (
-    <div
-      className={`flex flex-col p-3 rounded-lg max-w-[80%] ${bubbleClasses}`}
-      style={!isSender ? { backgroundColor: color } : undefined}
-    >
-      {!isSender && <span className="text-sm font-bold mb-1">{sender}</span>}
-      <p className="break-words">{content}</p>
-      <span className="text-xs mt-1 text-gray-200 self-end">{timestamp}</span>
+    <div className={`flex ${isSender ? 'justify-end' : 'justify-start'}  `}>
+      <div
+        className={`flex flex-col p-3 rounded-lg max-w-[75%] ${bubbleClasses}`}
+        style={!isSender ? { backgroundColor: color } : undefined}
+      >
+        {!isSender && <span className="text-sm font-bold mb-1">{sender}</span>}
+        <p className="break-words">{content}</p>
+        <span className="text-xs mt-1 text-gray-200 self-end">{timestamp}</span>
+      </div>
     </div>
   );
 };

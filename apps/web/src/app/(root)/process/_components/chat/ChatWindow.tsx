@@ -44,7 +44,7 @@ const ChatWindow: React.FC = () => {
     <div className="flex flex-col max-h-[550px] p-4 bg-gray-100 rounded-lg shadow overflow-hidden">
       <div
         ref={containerRef}
-        className="flex-1 overflow-y-auto max-h-[450px] space-y-2 overflow-hidden"
+        className="flex-1 overflow-y-auto max-h-[450px] space-y-2"
         onScroll={handleScroll}
       >
         {messages.map((message) => {
