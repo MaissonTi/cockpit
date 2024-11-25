@@ -1,41 +1,21 @@
-import React, { useEffect, useRef, useState } from 'react';
-
+import React from 'react';
 import MessageBubble from './MessageBubble';
+import useChatScroll from '../../_hooks/useChatScroll';
 import { useChat } from '../../_context/ChatContext';
 
 const ChatWindow: React.FC = () => {
   const { messages, users } = useChat();
-  const bottomRef = useRef<HTMLDivElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [isAtBottom, setIsAtBottom] = useState(true);
-  const [unreadMessages, setUnreadMessages] = useState(0);
 
-  const scrollToBottom = () => {
-    if (bottomRef.current) {
-      bottomRef.current.scrollIntoView({ behavior: 'smooth' });
-      setUnreadMessages(0);
-    }
-  };
-
-  const handleScroll = () => {
-    if (containerRef.current) {
-      const { scrollHeight, scrollTop, clientHeight } = containerRef.current;
-      const isBottom = scrollHeight - scrollTop <= clientHeight + 10;
-      setIsAtBottom(isBottom);
-
-      if (isBottom) {
-        setUnreadMessages(0);
-      }
-    }
-  };
-
-  useEffect(() => {
-    if (isAtBottom) {
-      scrollToBottom();
-    } else {
-      setUnreadMessages((prev) => prev + 1);
-    }
-  }, [messages]);
+  // Usar o hook com mensagens como dependência
+  const {
+    containerRef,
+    isAtBottom,
+    unreadMessages,
+    scrollToBottom,
+    handleScroll,
+  } = useChatScroll({
+    dependencies: [messages],
+  });
 
   const getUserById = (userId: number) =>
     users.find((user) => user.id === userId);
@@ -60,7 +40,6 @@ const ChatWindow: React.FC = () => {
             />
           ) : null;
         })}
-        <div ref={bottomRef} />
       </div>
 
       {!isAtBottom && unreadMessages > 0 && (

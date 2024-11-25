@@ -16,7 +16,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   color,
 }) => {
   const bubbleClasses = isSender
-    ? 'self-end bg-blue-500 text-white animate-slideInRight'
+    ? 'self-end bg-blue-500 text-white animate-slideInLeft'
     : 'self-start bg-gray-100 text-black animate-slideInLeft';
 
   return (
