@@ -31,6 +31,7 @@ export const authOptions: AuthOptions = {
             email: credentials?.email,
             password: credentials?.password,
           }),
+          cache: 'no-store',
           headers: { 'Content-Type': 'application/json' },
         });
         const { user, access_token } = (await res.json()) as {
@@ -81,6 +82,7 @@ export const authOptions: AuthOptions = {
         token.accessToken = user?.access_token;
         token.user = user;
       }
+
       // if(account?.type === 'google') {
       //   token.accessToken = account?.accessToken;
       // }
@@ -91,6 +93,7 @@ export const authOptions: AuthOptions = {
         return {
           ...session,
           ...token?.user,
+          accessToken: token.accessToken,
           isAdmin: token?.user?.role === 'ADMIN',
         };
       }

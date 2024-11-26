@@ -1,6 +1,6 @@
 //import { env } from '@saas/env'
 import ky from 'ky';
-import { getCsrfToken } from 'next-auth/react';
+import { getCsrfToken, getSession } from 'next-auth/react';
 export type { Options } from 'ky';
 
 export const api = ky.create({
@@ -8,10 +8,13 @@ export const api = ky.create({
   hooks: {
     beforeRequest: [
       async (request) => {
-        const token = await getCsrfToken();
+        const session = await getSession();
 
-        if (token) {
-          request.headers.set('Authorization', `Bearer ${token}`);
+        if (session?.accessToken) {
+          request.headers.set(
+            'Authorization',
+            `Bearer ${session?.accessToken}`,
+          );
         }
       },
     ],

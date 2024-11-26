@@ -5,6 +5,7 @@ import { AuthenticateController } from './http/controllers/authenticate.controll
 import { HealthController } from './http/controllers/health.controller';
 import { UserController } from './http/controllers/user.controller';
 import { ProcessDisputeController } from './http/controllers/process-dispute.controller';
+import { UserMessageController } from './http/controllers/user-message.controller';
 
 @Module({
   imports: [TerminusModule, UseCasesModule],
@@ -13,6 +14,7 @@ import { ProcessDisputeController } from './http/controllers/process-dispute.con
     UserController,
     AuthenticateController,
     ProcessDisputeController,
+    UserMessageController,
   ],
   providers: [],
 })

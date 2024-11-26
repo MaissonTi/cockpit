@@ -12,9 +12,10 @@ import { useSession } from 'next-auth/react';
 
 interface Props {
   data: Omit<Process, 'batch'>;
+  onClick: (id: string) => void;
 }
 
-function ProcessItem({ data }: Props) {
+function ProcessItem({ data, onClick }: Props) {
   const { data: session } = useSession();
 
   return (
@@ -27,7 +28,7 @@ function ProcessItem({ data }: Props) {
         <div>Sessão: {data.isOpen ? 'Aberta' : 'Fechada'}</div>
       </CardContent>
       <CardFooter className="flex gap-1">
-        <Button className="w-full">
+        <Button onClick={() => onClick(data.id)} className="w-full">
           {session?.isAdmin ? 'Iniciar' : 'Entrar'}
         </Button>
       </CardFooter>

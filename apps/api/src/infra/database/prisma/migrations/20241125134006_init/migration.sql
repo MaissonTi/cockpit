@@ -12,6 +12,19 @@ CREATE TABLE "users" (
 );
 
 -- CreateTable
+CREATE TABLE "user_messagens" (
+    "id" TEXT NOT NULL,
+    "user_id" TEXT NOT NULL,
+    "destinate_id" TEXT NOT NULL,
+    "is_group" BOOLEAN NOT NULL DEFAULT false,
+    "content" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3),
+
+    CONSTRAINT "user_messagens_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "process_disputes" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -66,6 +79,12 @@ CREATE TABLE "batch_throw" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
+
+-- AddForeignKey
+ALTER TABLE "user_messagens" ADD CONSTRAINT "user_messagens_id_key" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "user_messagens" ADD CONSTRAINT "process_dispute_messagens_key" FOREIGN KEY ("destinate_id") REFERENCES "process_disputes"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "process_disputes_users" ADD CONSTRAINT "process_disputes_id_key" FOREIGN KEY ("process_disputes_id") REFERENCES "process_disputes"("id") ON DELETE CASCADE ON UPDATE CASCADE;

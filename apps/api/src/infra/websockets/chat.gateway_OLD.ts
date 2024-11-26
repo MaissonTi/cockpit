@@ -1,5 +1,5 @@
 // src/chat.gateway.ts
-import { forwardRef, Inject, UseGuards } from '@nestjs/common';
+import { UseGuards } from '@nestjs/common';
 import {
   SubscribeMessage,
   WebSocketGateway,
@@ -13,24 +13,10 @@ import {
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { EnvService } from '../env/env.service';
-import { CreateUserMessageUseCase } from '@/app/usecases/user-message/create-user-message.usecase';
-import { ICreateUserMessageUseCase } from '@/domain/usecases/user-message/create-user-message.usecase.interface';
-import { IUserMessageRepository } from '@/domain/protocols/database/repositories/user-message.repository.interface';
-import { UserMessageRepository } from '../database/prisma/repositories/user-message.repositories';
 
 interface Bid {
   user: string;
   amount: number;
-}
-
-interface MessageBody {
-  group: string;
-  user: string;
-  message: {
-    userId: string;
-    content: string;
-    timestamp: string;
-  };
 }
 
 interface GroupState {
@@ -49,9 +35,6 @@ interface GroupState {
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
-
-  @Inject(UserMessageRepository.name)
-  private readonly userMessageRepository: IUserMessageRepository;
 
   constructor(
     private jwtService: JwtService,
@@ -76,7 +59,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     try {
       const token = client.handshake.headers.authorization;
-
       if (!token) {
         throw new WsException('Token não fornecido');
       }
@@ -100,28 +82,21 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('message')
-  async handleMessage(
-    @MessageBody()
-    messageBody: MessageBody,
+  handleMessage(
+    @MessageBody() message: { group: string; user: string; text: string },
     @ConnectedSocket() client: Socket,
-  ): Promise<void> {
-    //const user = client.data.user;
-    const { group, message } = messageBody;
+  ): void {
+    const userId = client.handshake.auth?.userId;
+
+    const { group, user, text } = message;
 
     if (!group) {
       client.emit('error', 'Grupo não especificado.');
       return;
     }
 
-    // Salva no BD
-    await this.userMessageRepository.create({
-      isGroup: true,
-      content: message.content,
-      userId: message.userId,
-      destinateId: group,
-    });
     // Envia a mensagem apenas para os membros da sala
-    this.server.to(group).emit('message', messageBody);
+    this.server.to(group).emit('message', { user, text });
   }
 
   @SubscribeMessage('joinGroup')
@@ -130,8 +105,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: Socket,
   ): void {
     client.join(group);
-
-    console.log(`Usuario ${user} entrou no grupo ${group}`);
 
     if (!this.groups[group]) {
       this.groups[group] = {

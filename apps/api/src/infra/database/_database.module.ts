@@ -3,6 +3,7 @@ import { ProcessDisputeRepository } from './prisma/repositories/process-dispute.
 
 import { PrismaService } from './prisma/prisma.service';
 import { UserRepository } from './prisma/repositories/user.repositories';
+import { UserMessageRepository } from './prisma/repositories/user-message.repositories';
 
 @Module({
   imports: [],
@@ -10,7 +11,12 @@ import { UserRepository } from './prisma/repositories/user.repositories';
     PrismaService,
     UserRepository.toFactory(),
     ProcessDisputeRepository.toFactory(),
+    UserMessageRepository.toFactory(),
   ],
-  exports: [UserRepository.name, ProcessDisputeRepository.name],
+  exports: [
+    UserRepository.name,
+    ProcessDisputeRepository.name,
+    UserMessageRepository.name,
+  ],
 })
 export class DatabaseModule {}

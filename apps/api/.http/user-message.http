@@ -1,0 +1,41 @@
+@baseUrl = http://localhost:3333
+
+@authToken = {{authenticate.response.body.access_token}}
+
+###
+
+# @name authenticate
+POST {{baseUrl}}/sessions
+Content-Type: application/json
+
+{
+  "email": "admin@gmail.com",
+  "password": "123456"
+}
+
+###
+
+# @name profile
+GET {{baseUrl}}/sessions
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+###
+
+# @name create_user
+POST {{baseUrl}}/user-messages
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "userId": "ff0eccc0-425b-42a5-9f1c-02a996968606",
+  "destinateId": "4a955b23-1fb5-4a5d-baa8-ebdd78712bcc",  
+  "content": "oi Lord! Aqui é o admin"
+}
+
+###
+
+# @name list_user
+GET {{baseUrl}}/user-messages?destinateId=4a955b23-1fb5-4a5d-baa8-ebdd78712bcc
+Content-Type: application/json
+Authorization: Bearer {{authToken}}

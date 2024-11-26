@@ -1,3 +1,4 @@
+import getMessages from '@/actions/user-message.action';
 import ProcessForm from '../_components/process-form';
 
 interface PageProps {
@@ -6,11 +7,17 @@ interface PageProps {
   };
 }
 
-export default function ProcessDisputPage({ params }: PageProps) {
+export default async function ProcessDisputPage({ params }: PageProps) {
+  if (!params.uuid) {
+    return <div>...</div>;
+  }
+
+  const { data } = await getMessages(params.uuid);
+
   return (
     <div className="space-y-4 py-4">
       <main className="space-y-4">
-        <ProcessForm />
+        <ProcessForm params={{ group: params.uuid, messages: data }} />
       </main>
     </div>
   );

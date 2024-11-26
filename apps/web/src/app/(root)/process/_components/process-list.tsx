@@ -19,6 +19,9 @@ import { queryClient } from '@/lib/react-query';
 import ProcessService from '@/services/process.service';
 import ProcessItem from './process-item';
 
+import { useSession } from 'next-auth/react';
+import { useSocket } from '../_context/SocketContext';
+
 export default function ProcessList() {
   const [push] = usePushParams();
 
@@ -44,8 +47,8 @@ export default function ProcessList() {
     },
   });
 
-  function handleEdit(values: { id: string }) {
-    startProcess({});
+  function handleStartProcess(id: string) {
+    push({ path: `/process/${id}` });
   }
 
   return (
@@ -65,7 +68,13 @@ export default function ProcessList() {
 
           {result?.data &&
             result.data.map((process) => {
-              return <ProcessItem key={process.id} data={process} />;
+              return (
+                <ProcessItem
+                  key={process.id}
+                  data={process}
+                  onClick={handleStartProcess}
+                />
+              );
             })}
         </div>
       </div>

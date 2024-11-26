@@ -3,12 +3,11 @@ import { useChat } from '../../_context/ChatContext';
 
 const ChatInput: React.FC = () => {
   const [message, setMessage] = useState('');
-  const [selectedUser, setSelectedUser] = useState(1);
-  const { sendMessage, users } = useChat();
+  const { sendMessage } = useChat();
 
   const handleSend = () => {
     if (message.trim()) {
-      sendMessage(selectedUser, message);
+      sendMessage(message);
       setMessage('');
     }
   };
@@ -16,17 +15,6 @@ const ChatInput: React.FC = () => {
   return (
     <div className="flex flex-col space-y-2">
       <div className="flex items-center space-x-2">
-        <select
-          className="p-2 border rounded-lg"
-          value={selectedUser}
-          onChange={(e) => setSelectedUser(Number(e.target.value))}
-        >
-          {users.map((user) => (
-            <option key={user.id} value={user.id}>
-              {user.name}
-            </option>
-          ))}
-        </select>
         <input
           type="text"
           placeholder="Digite sua mensagem..."

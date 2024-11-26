@@ -1,26 +1,40 @@
+'use client';
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-
-interface User {
-  id: number;
-  name: string;
-  color: string; // Adicionamos uma propriedade para a cor
-}
+import { ptBR, se } from 'date-fns/locale';
+import { useSession } from 'next-auth/react';
+import { useSocket } from './SocketContext';
+import { User } from 'next-auth';
+import { queryClient } from '@/lib/react-query';
+import UserMessageService from '@/services/user-message.service';
+import { useQuery } from '@tanstack/react-query';
 
 interface Message {
-  id: number;
-  userId: number;
-  content: string;
-  timestamp: string;
+  group: string;
+  user: string;
+  message: {
+    id: number;
+    userId: string;
+    content: string;
+    timestamp: string;
+  };
 }
 
-interface ChatContextProps {
-  users: User[];
-  messages: Message[];
-  sendMessage: (userId: number, content: string) => void;
-  addUser: (name: string) => void;
+interface Options {
+  group?: string;
+  messages?: Message[];
 }
+
+type ChatContextProps = {
+  group?: string;
+  setGroup: (group: string) => void;
+  setMessages: (message: Message[]) => void;
+  session: User | null;
+  messages: Message[];
+  sendMessage: (content: string) => void;
+};
+
+type UseChatProps = Omit<ChatContextProps, 'setGroup' | 'setMessages'>;
 
 const ChatContext = createContext<ChatContextProps | undefined>(undefined);
 
@@ -35,58 +49,115 @@ const getRandomColor = (): string => {
 };
 
 const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [users, setUsers] = useState<User[]>([
-    { id: 1, name: 'Você', color: '#1D4ED8' }, // Azul fixo para "Você"
-    { id: 2, name: 'Amigo', color: getRandomColor() },
-    { id: 3, name: 'Carlos', color: getRandomColor() },
-  ]);
+  const { socket } = useSocket();
+  const { data: session } = useSession();
+  const [group, setGroup] = useState<string>('');
+  const [messages, setMessages] = useState<Message[]>([]);
 
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 1,
-      userId: 1,
-      content: 'Olá! Tudo bem?',
-      timestamp: format(new Date(), 'HH:mm', { locale: ptBR }),
-    },
-    {
-      id: 2,
-      userId: 2,
-      content: 'Oi! Tudo ótimo, e você?',
-      timestamp: format(new Date(), 'HH:mm', { locale: ptBR }),
-    },
-  ]);
+  const {
+    data: result,
+    isLoading,
+    isFetching,
+  } = useQuery({
+    queryKey: ['user-message', group],
+    queryFn: () =>
+      UserMessageService.list({
+        currentPage: 1,
+        perPage: 20,
+        filters: {
+          destinateId: group,
+        },
+      }),
+  });
 
-  const sendMessage = (userId: number, content: string) => {
+  React.useEffect(() => {
+    console.log(result, group);
+    if (result) {
+      setMessages(
+        result.data.map((message) => {
+          return {
+            group: message.destinateId,
+            user: 'Teste:' + message.userId, //message.user,
+            message: {
+              id: Number(message.id),
+              userId: message.userId,
+              content: message.content,
+              timestamp: message?.createdAt?.toString() || '',
+            },
+          };
+        }),
+      );
+    }
+  }, [result]);
+
+  React.useEffect(() => {
+    if (!socket || !group || !session) return;
+
+    socket.emit('joinGroup', {
+      group: group,
+      user: session.name,
+    });
+
+    socket.on('message', (message) => {
+      setMessages((prev) => {
+        return [...prev, message];
+      });
+    });
+
+    return () => {
+      socket.off('message');
+      socket.disconnect();
+    };
+  }, [socket, group]);
+
+  const sendMessage = (content: string) => {
+    console.log(socket, group, session);
+
+    if (!socket && !group && !session) return;
+
     const newMessage: Message = {
-      id: Date.now(),
-      userId,
-      content,
-      timestamp: format(new Date(), "'Hoje,' HH:mm", { locale: ptBR }),
+      group: group,
+      user: session?.name!,
+      message: {
+        id: Date.now(),
+        userId: session?.id || '',
+        content,
+        timestamp: format(new Date(), 'HH:mm', { locale: ptBR }),
+      },
     };
 
-    setMessages((prev) => [...prev, newMessage]);
-  };
-
-  const addUser = (name: string) => {
-    const newUser: User = {
-      id: users.length + 1,
-      name,
-      color: getRandomColor(),
-    };
-    setUsers((prev) => [...prev, newUser]);
+    socket.emit('message', newMessage);
   };
 
   return (
-    <ChatContext.Provider value={{ users, messages, sendMessage, addUser }}>
+    <ChatContext.Provider
+      value={{ group, setGroup, session, messages, sendMessage, setMessages }}
+    >
       {children}
     </ChatContext.Provider>
   );
 };
 
-export const useChat = () => {
+export const useChat = (options?: Options): UseChatProps => {
   const context = useContext(ChatContext);
   if (!context) throw new Error('useChat must be used within a ChatProvider');
-  return context;
+
+  const { session, messages, sendMessage, setGroup, group, setMessages } =
+    context;
+
+  // Aqui você pode adicionar lógica para ações baseadas no grupo
+  React.useEffect(() => {
+    if (options?.group) {
+      console.log('Mudou o grupo', options?.group);
+      setGroup(options?.group);
+    }
+    if (options?.messages) {
+      console.log(options?.messages);
+      setMessages(options?.messages);
+    }
+  }, [options?.group]);
+
+  return { session, messages, sendMessage, group };
 };
 
 export default ChatProvider;

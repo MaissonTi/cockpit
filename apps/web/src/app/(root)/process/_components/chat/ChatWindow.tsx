@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { use, useEffect } from 'react';
 import MessageBubble from './MessageBubble';
 import useChatScroll from '../../_hooks/useChatScroll';
 import { useChat } from '../../_context/ChatContext';
 
 const ChatWindow: React.FC = () => {
-  const { messages, users } = useChat();
+  const { session, messages } = useChat();
 
   // Usar o hook com mensagens como dependência
   const {
@@ -17,9 +17,6 @@ const ChatWindow: React.FC = () => {
     dependencies: [messages],
   });
 
-  const getUserById = (userId: number) =>
-    users.find((user) => user.id === userId);
-
   return (
     <div className="flex flex-col max-h-[550px] p-4 bg-gray-100 rounded-lg shadow overflow-hidden">
       <div
@@ -27,19 +24,19 @@ const ChatWindow: React.FC = () => {
         className="flex-1 overflow-y-auto max-h-[450px] space-y-2"
         onScroll={handleScroll}
       >
-        {messages.map((message) => {
-          const user = getUserById(message.userId);
-          return user ? (
-            <MessageBubble
-              key={message.id}
-              content={message.content}
-              sender={user.name}
-              isSender={message.userId === 1}
-              timestamp={message.timestamp}
-              color={user.color}
-            />
-          ) : null;
-        })}
+        {messages &&
+          messages
+            .filter((i) => !!i)
+            .map(({ user, message }) => (
+              <MessageBubble
+                key={message.id}
+                content={message.content}
+                sender={user}
+                isSender={message.userId === session?.id}
+                timestamp={message.timestamp}
+                color={message.userId === session?.id ? '#1D4ED8' : '#fffe'}
+              />
+            ))}
       </div>
 
       {!isAtBottom && unreadMessages > 0 && (
@@ -58,3 +55,4 @@ const ChatWindow: React.FC = () => {
 };
 
 export default ChatWindow;
+7;

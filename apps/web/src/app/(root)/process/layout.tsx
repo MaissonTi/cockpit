@@ -1,5 +1,5 @@
 import { SocketProvider } from './_context/SocketContext';
-
+import ChatProvider from './_context/ChatContext';
 export async function ProcessLayout({
   children, // will be a page or nested layout
 }: {
@@ -7,7 +7,9 @@ export async function ProcessLayout({
 }) {
   return (
     <>
-      <SocketProvider>{children}</SocketProvider>
+      <SocketProvider>
+        <ChatProvider>{children}</ChatProvider>
+      </SocketProvider>
     </>
   );
 }
