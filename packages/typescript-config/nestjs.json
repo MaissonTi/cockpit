@@ -15,6 +15,14 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "strictNullChecks": false,
-    "strictBindCallApply": false
+    "strictBindCallApply": false,
+    "paths": {
+      "@/*": [
+        "src/*"
+      ],
+      "@test/*": [
+        "test/*"
+      ],
+    },
   }
 }

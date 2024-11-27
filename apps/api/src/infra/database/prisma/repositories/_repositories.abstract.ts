@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma.service';
 
 export abstract class Repositories {
   protected readonly prisma: PrismaService;
-  constructor(private readonly prismaService: PrismaService) {
+  constructor(readonly prismaService: PrismaService) {
     this.prisma = prismaService;
   }
 
@@ -40,7 +40,9 @@ export abstract class Repositories {
     };
   }
 
-  static toFactory<T extends Repositories>(this: new (prismaService: PrismaService) => T) {
+  static toFactory<T extends Repositories>(
+    this: new (prismaService: PrismaService) => T,
+  ) {
     return {
       inject: [PrismaService],
       provide: this.name,

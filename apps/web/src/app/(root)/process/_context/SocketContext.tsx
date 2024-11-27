@@ -3,6 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useSession } from 'next-auth/react';
 
+let socketInstance: Socket | null = null;
 interface SocketContextValue {
   socket: Socket | null;
   isConnected: boolean;
@@ -19,9 +20,25 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const initializeListeners = (socket: Socket) => {
+    // Adicione seus eventos de socket aqui
+    socket.on('message', (message: string) => {
+      console.log('New message:', message);
+    });
+
+    // Limpa os ouvintes para evitar duplicações
+    socket.on('disconnect', (reason) => {
+      console.log('Disconnected:', reason);
+    });
+
+    socket.on('connect_error', (err) => {
+      setError(`Connection error: ${err.message}`);
+    });
+  };
+
   useEffect(() => {
-    if (session?.accessToken) {
-      const socketInstance = io('http://localhost:3333', {
+    if (session?.accessToken && !socketInstance) {
+      socketInstance = io('http://localhost:3333', {
         //auth: { token: session.accessToken },
         extraHeaders: {
           Authorization: session?.accessToken || '',
@@ -33,11 +50,13 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
         reconnectionDelayMax: 5000, // Max delay between attempts
       });
 
+      socketInstance.connect();
+
       // Handle socket events
       socketInstance.on('connect', () => {
         setIsConnected(true);
-        setError(null); // Clear any previous errors on successful connection
-        console.log('Connected to server:', socketInstance.id);
+        setError(null);
+        initializeListeners(socketInstance!); // Reinstale ouvintes após reconexão
       });
 
       socketInstance.on('disconnect', (reason) => {
@@ -45,7 +64,6 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
         if (reason === 'io server disconnect') {
           setError('Disconnected by server');
         }
-        console.log('Disconnected from server');
       });
 
       socketInstance.on('connect_error', (err) => {
@@ -63,10 +81,16 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
       socketInstance.connect();
       setSocket(socketInstance);
 
+      setIsConnected(socketInstance.connected);
+
       return () => {
-        socketInstance.disconnect();
+        socketInstance?.off(); // Remove todos os ouvintes ao desmontar
       };
     }
+
+    return () => {
+      socketInstance?.off(); // Remove todos os ouvintes ao desmontar
+    };
   }, [session?.accessToken]);
 
   return (

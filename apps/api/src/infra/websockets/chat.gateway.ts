@@ -13,25 +13,19 @@ import {
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { EnvService } from '../env/env.service';
-import { CreateUserMessageUseCase } from '@/app/usecases/user-message/create-user-message.usecase';
-import { ICreateUserMessageUseCase } from '@/domain/usecases/user-message/create-user-message.usecase.interface';
 import { IUserMessageRepository } from '@/domain/protocols/database/repositories/user-message.repository.interface';
 import { UserMessageRepository } from '../database/prisma/repositories/user-message.repositories';
+import { UserMessageModel } from '@repo/domain/models/user-message.model';
 
 interface Bid {
   user: string;
   amount: number;
 }
 
-interface MessageBody {
-  group: string;
-  user: string;
-  message: {
-    userId: string;
-    content: string;
-    timestamp: string;
-  };
-}
+type Message = UserMessageModel & {
+  username: string;
+  timestamp: string;
+};
 
 interface GroupState {
   bids: Bid[];
@@ -102,26 +96,26 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('message')
   async handleMessage(
     @MessageBody()
-    messageBody: MessageBody,
+    messageBody: Message,
     @ConnectedSocket() client: Socket,
   ): Promise<void> {
-    //const user = client.data.user;
-    const { group, message } = messageBody;
+    const user = client.data.user;
+    const group = messageBody.destinateId;
+    const message = { ...messageBody, username: user.username } as Message;
 
     if (!group) {
       client.emit('error', 'Grupo não especificado.');
       return;
     }
 
-    // Salva no BD
     await this.userMessageRepository.create({
       isGroup: true,
       content: message.content,
       userId: message.userId,
       destinateId: group,
     });
-    // Envia a mensagem apenas para os membros da sala
-    this.server.to(group).emit('message', messageBody);
+
+    this.server.to(group).emit('message', message);
   }
 
   @SubscribeMessage('joinGroup')

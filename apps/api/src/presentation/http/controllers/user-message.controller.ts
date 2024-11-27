@@ -10,10 +10,10 @@ import { IListUserMessageUseCase } from '@/domain/usecases/user-message/list-use
 import { ICreateUserMessageUseCase } from '@/domain/usecases/user-message/create-user-message.usecase.interface';
 import { ListUserMessageUseCase } from '@/app/usecases/user-message/list-user-message.usecase';
 import { UserMessagePresenter } from '../presenters/user-message.presenter';
-import { UserMessageResponseDTO } from '../dtos/user-message.dto';
-import { UserMessageCreateRequestDTO } from '../dtos/user-message.dto';
-import { UserMessageListQueryDTO } from '../dtos/user-message.dto';
-import { UserMessageListResponseDTO } from '../dtos/user-message.dto';
+import { UserMessageResponseDTO } from '@repo/domain/dtos/user-message.dto';
+import { UserMessageCreateRequestDTO } from '@repo/domain/dtos/user-message.dto';
+import { UserMessageListQueryDTO } from '@repo/domain/dtos/user-message.dto';
+import { UserMessageListResponseDTO } from '@repo/domain/dtos/user-message.dto';
 
 @ApiTags('UserMessage')
 @Controller('user-messages')

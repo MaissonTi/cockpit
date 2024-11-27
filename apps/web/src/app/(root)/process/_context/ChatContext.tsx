@@ -1,24 +1,14 @@
 'use client';
-import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { format } from 'date-fns';
-import { ptBR, se } from 'date-fns/locale';
+import { ptBR } from 'date-fns/locale';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { useSession } from 'next-auth/react';
 import { useSocket } from './SocketContext';
 import { User } from 'next-auth';
-import { queryClient } from '@/lib/react-query';
 import UserMessageService from '@/services/user-message.service';
 import { useQuery } from '@tanstack/react-query';
 
-interface Message {
-  group: string;
-  user: string;
-  message: {
-    id: number;
-    userId: string;
-    content: string;
-    timestamp: string;
-  };
-}
+import { UserMessageModel as Message } from '@repo/domain/models/user-message.model';
 
 interface Options {
   group?: string;
@@ -73,20 +63,7 @@ const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   React.useEffect(() => {
     console.log(result, group);
     if (result) {
-      setMessages(
-        result.data.map((message) => {
-          return {
-            group: message.destinateId,
-            user: 'Teste:' + message.userId, //message.user,
-            message: {
-              id: Number(message.id),
-              userId: message.userId,
-              content: message.content,
-              timestamp: message?.createdAt?.toString() || '',
-            },
-          };
-        }),
-      );
+      setMessages(result.data);
     }
   }, [result]);
 
@@ -115,18 +92,16 @@ const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
 
     if (!socket && !group && !session) return;
 
-    const newMessage: Message = {
-      group: group,
-      user: session?.name!,
-      message: {
-        id: Date.now(),
-        userId: session?.id || '',
-        content,
-        timestamp: format(new Date(), 'HH:mm', { locale: ptBR }),
-      },
+    const newMessage: Message & { username: string; timestamp: string } = {
+      id: String(Date.now()),
+      content: content,
+      username: session?.name!,
+      userId: session?.id!,
+      destinateId: group,
+      timestamp: format(new Date(), 'HH:mm', { locale: ptBR }),
     };
 
-    socket.emit('message', newMessage);
+    socket!.emit('message', newMessage);
   };
 
   return (
@@ -152,10 +127,9 @@ export const useChat = (options?: Options): UseChatProps => {
       setGroup(options?.group);
     }
     if (options?.messages) {
-      console.log(options?.messages);
       setMessages(options?.messages);
     }
-  }, [options?.group]);
+  }, [options]);
 
   return { session, messages, sendMessage, group };
 };

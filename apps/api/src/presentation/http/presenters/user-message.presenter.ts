@@ -1,4 +1,6 @@
-import { UserMessageModel } from '@/domain/models/user-message.model';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { UserMessageModel } from '@repo/domain/models/user-message.model';
 
 type Presenter<T> = {
   get: () => T;
@@ -13,6 +15,7 @@ export class UserMessagePresenter {
     };
   }
 
+  // Refactor this, remove generic T and use directly DTO
   protected static get<T>(data: UserMessageModel): T | null {
     return (
       data &&
@@ -22,8 +25,9 @@ export class UserMessagePresenter {
         destinateId: data.destinateId,
         isGroup: data.isGroup,
         content: data.content,
+        timestamp: format(data.createdAt, 'HH:mm', { locale: ptBR }),
+        username: data.user?.name,
         createdAt: data.createdAt,
-        updatedAt: data.updatedAt,
       } as T)
     );
   }

@@ -15,14 +15,7 @@ Content-Type: application/json
 
 ###
 
-# @name profile
-GET {{baseUrl}}/sessions
-Content-Type: application/json
-Authorization: Bearer {{authToken}}
-
-###
-
-# @name create_user
+# @name create_user_messages
 POST {{baseUrl}}/user-messages
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
@@ -35,7 +28,7 @@ Authorization: Bearer {{authToken}}
 
 ###
 
-# @name list_user
-GET {{baseUrl}}/user-messages?destinateId=4a955b23-1fb5-4a5d-baa8-ebdd78712bcc
+# @name list_user_messages
+GET {{baseUrl}}/user-messages
 Content-Type: application/json
 Authorization: Bearer {{authToken}}

@@ -1,3 +1,5 @@
+import { UserModel } from './user.model';
+
 export type UserMessageModel = {
   id: string;
   userId: string;
@@ -6,4 +8,5 @@ export type UserMessageModel = {
   content: string;
   createdAt?: Date;
   updatedAt?: Date;
+  user?: Partial<UserModel>;
 };

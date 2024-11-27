@@ -1,4 +1,4 @@
-import { UserMessageModel } from '@/domain/models/user-message.model';
+import { UserMessageModel } from '@repo/domain/models/user-message.model';
 import { Paginated, Pagination } from '../types/pagination.types';
 
 export namespace IUserMessageRepository {

@@ -1,4 +1,4 @@
-import { ProcessDisputeModel } from '@/domain/models/process-dispute.model';
+import { ProcessDisputeModel } from '@repo/domain/models/process-dispute.model';
 
 type Presenter<T> = {
   get: () => T;

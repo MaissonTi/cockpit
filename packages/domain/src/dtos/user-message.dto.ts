@@ -46,6 +46,10 @@ export class UserMessageResponseDTO {
   @IsString()
   @IsNotEmpty()
   createdAt: Date;
+
+  @IsString()
+  @IsNotEmpty()
+  timestamp: string;
 }
 
 export class UserMessageListQueryDTO extends PaginationQueryDTO {

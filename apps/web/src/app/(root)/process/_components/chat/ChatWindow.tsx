@@ -25,18 +25,16 @@ const ChatWindow: React.FC = () => {
         onScroll={handleScroll}
       >
         {messages &&
-          messages
-            .filter((i) => !!i)
-            .map(({ user, message }) => (
-              <MessageBubble
-                key={message.id}
-                content={message.content}
-                sender={user}
-                isSender={message.userId === session?.id}
-                timestamp={message.timestamp}
-                color={message.userId === session?.id ? '#1D4ED8' : '#fffe'}
-              />
-            ))}
+          messages.map((item) => (
+            <MessageBubble
+              key={item.id}
+              content={item.content}
+              sender={item.username}
+              isSender={item.userId === session?.id}
+              timestamp={item.timestamp}
+              color={item.userId === session?.id ? '#1D4ED8' : '#fffe'}
+            />
+          ))}
       </div>
 
       {!isAtBottom && unreadMessages > 0 && (

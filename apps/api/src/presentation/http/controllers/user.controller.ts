@@ -9,8 +9,24 @@ import { IGetUserUseCase } from '@/domain/usecases/user/get-user.usecase.interfa
 import { IListUserUseCase } from '@/domain/usecases/user/list-user.usecase.interface';
 import { IUpdateUserUseCase } from '@/domain/usecases/user/update-user.usecase.interface';
 import { Public } from '@/infra/auth/public';
-import { Body, Controller, Delete, Get, Inject, Param, ParseUUIDPipe, Post, Put, Query } from '@nestjs/common';
-import { ApiBadRequestResponse, ApiNoContentResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Inject,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
+import {
+  ApiBadRequestResponse,
+  ApiNoContentResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import {
   UserCreateRequestDTO,
   UserListQueryDTO,
@@ -41,23 +57,38 @@ export class UserController {
   @ApiOperation({ summary: 'Create a User' })
   @ApiNoContentResponse({ description: 'User created' })
   @ApiBadRequestResponse({ description: 'User already exists!' })
-  async create(@Body() { name, email, password }: UserCreateRequestDTO): Promise<UserResponseDTO> {
-    const result = await this.createUserUseCase.execute({ name, email, password });
+  async create(
+    @Body() { name, email, password }: UserCreateRequestDTO,
+  ): Promise<UserResponseDTO> {
+    const result = await this.createUserUseCase.execute({
+      name,
+      email,
+      password,
+    });
     return UserPresenter.toHTTP<UserResponseDTO>(result).get();
   }
 
   @Get(':id')
-  async find(@Param('id', new ParseUUIDPipe()) id: string): Promise<UserResponseDTO | null> {
+  async find(
+    @Param('id', new ParseUUIDPipe()) id: string,
+  ): Promise<UserResponseDTO | null> {
     const result = await this.getUserUseCase.execute(id);
     return UserPresenter.toHTTP<UserResponseDTO>(result).get();
   }
 
   @Get()
-  async list(@Query() { currentPage, perPage, ...filter }: UserListQueryDTO): Promise<UserListResponseDTO> {
-    const result = await this.listUserUseCase.execute(filter, { currentPage, perPage });
+  async list(
+    @Query() { currentPage, perPage, ...filter }: UserListQueryDTO,
+  ): Promise<UserListResponseDTO> {
+    const result = await this.listUserUseCase.execute(filter, {
+      currentPage,
+      perPage,
+    });
     return {
       ...result,
-      data: result.data.map(user => UserPresenter.toHTTP<UserResponseDTO>(user).get()),
+      data: result.data.map((user) =>
+        UserPresenter.toHTTP<UserResponseDTO>(user).get(),
+      ),
     };
   }
 

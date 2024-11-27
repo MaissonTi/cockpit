@@ -1,4 +1,4 @@
-import { UserMessageModel } from '@/domain/models/user-message.model';
+import { UserMessageModel } from '@repo/domain/models/user-message.model';
 import { IUserMessageRepository } from '@/domain/protocols/database/repositories/user-message.repository.interface';
 import { ICreateUserMessageUseCase } from '@/domain/usecases/user-message/create-user-message.usecase.interface';
 

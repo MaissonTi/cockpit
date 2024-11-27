@@ -14,6 +14,12 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "gencc": "turbo gencc"
   },
+  "dependencies": {
+    "date-fns": "^4.1.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
+    "@nestjs/swagger": "^7.3.1"
+  },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",

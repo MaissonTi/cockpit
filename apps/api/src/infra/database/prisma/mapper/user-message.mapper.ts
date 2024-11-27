@@ -1,8 +1,9 @@
-import { UserMessageModel } from '@/domain/models/user-message.model';
+import { UserMessageModel } from '@repo/domain/models/user-message.model';
 import { UsersMessagens as UsersMessagensPrisma } from '@prisma/client';
 
 export class UserMessageMapper {
-  protected static objectModel(data: UsersMessagensPrisma): UserMessageModel {
+  //TODO: Refactor this, change any
+  protected static objectModel(data: any): UserMessageModel {
     return {
       id: data.id,
       content: data.content,
@@ -11,6 +12,7 @@ export class UserMessageMapper {
       isGroup: data.isGroup,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
+      user: data?.user,
     };
   }
 

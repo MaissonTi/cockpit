@@ -5,7 +5,7 @@ import {
 import { PrismaService } from '../prisma.service';
 import { Repositories } from './_repositories.abstract';
 import { IUserMessageRepository } from '@/domain/protocols/database/repositories/user-message.repository.interface';
-import { UserMessageModel } from '@/domain/models/user-message.model';
+import { UserMessageModel } from '@repo/domain/models/user-message.model';
 import { UserMessageMapper } from '../mapper/user-message.mapper';
 import { UsersMessagens as UsersMessagensPrisma } from '@prisma/client';
 
@@ -46,6 +46,20 @@ export class UserMessageRepository extends Repositories {
       this.prisma.usersMessagens.findMany({
         where: {
           ...filter,
+        },
+        select: {
+          id: true,
+          content: true,
+          destinateId: true,
+          userId: true,
+          isGroup: true,
+          createdAt: true,
+          updatedAt: true,
+          user: {
+            select: {
+              name: true,
+            },
+          },
         },
         ...this.pageSkipTake(pagination),
         orderBy: { createdAt: 'desc' },
