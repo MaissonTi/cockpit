@@ -20,6 +20,7 @@
       "@/*": [
         "src/*"
       ],
+      "@repo/domain/*": ["packages/domain/src"],
       "@test/*": [
         "test/*"
       ],

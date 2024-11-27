@@ -2,6 +2,7 @@ import { CreateUserMessageUseCase } from '@/app/usecases/user-message/create-use
 import { Body, Controller, Inject, Post, Get, Query } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiExtraModels,
   ApiNoContentResponse,
   ApiOperation,
   ApiTags,
@@ -10,11 +11,27 @@ import { IListUserMessageUseCase } from '@/domain/usecases/user-message/list-use
 import { ICreateUserMessageUseCase } from '@/domain/usecases/user-message/create-user-message.usecase.interface';
 import { ListUserMessageUseCase } from '@/app/usecases/user-message/list-user-message.usecase';
 import { UserMessagePresenter } from '../presenters/user-message.presenter';
-import { UserMessageResponseDTO } from '@repo/domain/dtos/user-message.dto';
-import { UserMessageCreateRequestDTO } from '@repo/domain/dtos/user-message.dto';
-import { UserMessageListQueryDTO } from '@repo/domain/dtos/user-message.dto';
-import { UserMessageListResponseDTO } from '@repo/domain/dtos/user-message.dto';
+import {
+  UserMessageResponseDTO,
+  UserMessageCreateRequestDTO,
+  UserMessageListQueryDTO,
+  UserMessageListResponseDTO,
+  UserMessageRequestDTO,
+} from '@repo/domain/dtos/user-message.dto';
+import {
+  PaginationQueryDTO,
+  PaginationResponseDTO,
+} from '../dtos/_pagination.dto';
 
+@ApiExtraModels(
+  PaginationQueryDTO,
+  PaginationResponseDTO,
+  UserMessageCreateRequestDTO,
+  UserMessageListQueryDTO,
+  UserMessageListResponseDTO,
+  UserMessageRequestDTO,
+  UserMessageResponseDTO,
+)
 @ApiTags('UserMessage')
 @Controller('user-messages')
 export class UserMessageController {
