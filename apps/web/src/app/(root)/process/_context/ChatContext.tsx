@@ -28,27 +28,13 @@ type UseChatProps = Omit<ChatContextProps, 'setGroup' | 'setMessages'>;
 
 const ChatContext = createContext<ChatContextProps | undefined>(undefined);
 
-// Função para gerar uma cor aleatória em hexadecimal
-const getRandomColor = (): string => {
-  const letters = '0123456789ABCDEF';
-  let color = '#';
-  for (let i = 0; i < 6; i++) {
-    color += letters[Math.floor(Math.random() * 16)];
-  }
-  return color;
-};
-
 const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { socket } = useSocket();
   const { data: session } = useSession();
   const [group, setGroup] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>([]);
 
-  const {
-    data: result,
-    isLoading,
-    isFetching,
-  } = useQuery({
+  const { data: result } = useQuery({
     queryKey: ['user-message', group],
     queryFn: () =>
       UserMessageService.list({
@@ -61,7 +47,6 @@ const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   });
 
   React.useEffect(() => {
-    console.log(result, group);
     if (result) {
       setMessages(result.data);
     }
@@ -83,13 +68,10 @@ const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
 
     return () => {
       socket.off('message');
-      socket.disconnect();
     };
   }, [socket, group]);
 
   const sendMessage = (content: string) => {
-    console.log(socket, group, session);
-
     if (!socket && !group && !session) return;
 
     const newMessage: Message & { username: string; timestamp: string } = {
@@ -120,16 +102,14 @@ export const useChat = (options?: Options): UseChatProps => {
   const { session, messages, sendMessage, setGroup, group, setMessages } =
     context;
 
-  // Aqui você pode adicionar lógica para ações baseadas no grupo
   React.useEffect(() => {
     if (options?.group) {
-      console.log('Mudou o grupo', options?.group);
       setGroup(options?.group);
     }
     if (options?.messages) {
       setMessages(options?.messages);
     }
-  }, [options]);
+  }, []);
 
   return { session, messages, sendMessage, group };
 };

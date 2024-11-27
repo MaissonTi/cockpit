@@ -1,5 +1,5 @@
-import React, { use, useEffect } from 'react';
-import MessageBubble from './MessageBubble';
+import React from 'react';
+import ChatMessage from './chat-message';
 import useChatScroll from '../../_hooks/useChatScroll';
 import { useChat } from '../../_context/ChatContext';
 
@@ -21,12 +21,12 @@ const ChatWindow: React.FC = () => {
     <div className="flex flex-col max-h-[550px] p-4 bg-gray-100 rounded-lg shadow overflow-hidden">
       <div
         ref={containerRef}
-        className="flex-1 overflow-y-auto max-h-[450px] space-y-2"
+        className="flex-1 overflow-y-auto max-h-[450px] space-y-2 h-screen p-2 scrollbar-thin scrollbar-thumb-scrollbar-thumb scrollbar-track-scrollbar-track"
         onScroll={handleScroll}
       >
         {messages &&
           messages.map((item) => (
-            <MessageBubble
+            <ChatMessage
               key={item.id}
               content={item.content}
               sender={item.username}
@@ -53,4 +53,3 @@ const ChatWindow: React.FC = () => {
 };
 
 export default ChatWindow;
-7;

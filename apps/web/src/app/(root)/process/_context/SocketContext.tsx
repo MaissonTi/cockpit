@@ -20,43 +20,24 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const initializeListeners = (socket: Socket) => {
-    // Adicione seus eventos de socket aqui
-    socket.on('message', (message: string) => {
-      console.log('New message:', message);
-    });
-
-    // Limpa os ouvintes para evitar duplicações
-    socket.on('disconnect', (reason) => {
-      console.log('Disconnected:', reason);
-    });
-
-    socket.on('connect_error', (err) => {
-      setError(`Connection error: ${err.message}`);
-    });
-  };
-
   useEffect(() => {
     if (session?.accessToken && !socketInstance) {
       socketInstance = io('http://localhost:3333', {
-        //auth: { token: session.accessToken },
         extraHeaders: {
           Authorization: session?.accessToken || '',
         },
         autoConnect: false,
-        reconnection: true, // Enable reconnection
-        reconnectionAttempts: 5, // Max reconnection attempts
-        reconnectionDelay: 1000, // Initial delay
-        reconnectionDelayMax: 5000, // Max delay between attempts
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
       });
 
       socketInstance.connect();
 
-      // Handle socket events
       socketInstance.on('connect', () => {
         setIsConnected(true);
         setError(null);
-        initializeListeners(socketInstance!); // Reinstale ouvintes após reconexão
       });
 
       socketInstance.on('disconnect', (reason) => {
@@ -84,12 +65,12 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
       setIsConnected(socketInstance.connected);
 
       return () => {
-        socketInstance?.off(); // Remove todos os ouvintes ao desmontar
+        socketInstance?.off();
       };
     }
 
     return () => {
-      socketInstance?.off(); // Remove todos os ouvintes ao desmontar
+      socketInstance?.off();
     };
   }, [session?.accessToken]);
 

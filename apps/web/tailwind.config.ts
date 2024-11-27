@@ -69,6 +69,11 @@ const config: Config = {
           '4': 'hsl(var(--chart-4))',
           '5': 'hsl(var(--chart-5))',
         },
+        scrollbar: {
+          thumb: '#d1d1d1',
+          thumbHover: '#bcbcbc',
+          track: '#f1f1f1',
+        },
       },
       borderRadius: {
         lg: 'var(--radius)',
@@ -77,6 +82,6 @@ const config: Config = {
       },
     },
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [require('tailwindcss-animate'), require('tailwind-scrollbar')],
 };
 export default config;

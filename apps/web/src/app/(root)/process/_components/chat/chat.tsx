@@ -1,6 +1,6 @@
 import React from 'react';
-import ChatWindow from './ChatWindow';
-import ChatInput from './ChatInput';
+import ChatWindow from './chat-window';
+import ChatInput from './chat-input';
 
 const Chat: React.FC = () => {
   return (

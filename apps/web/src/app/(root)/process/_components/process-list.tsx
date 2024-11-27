@@ -1,16 +1,5 @@
 'use client';
-
-import { z } from 'zod';
 import { Loader2Icon } from 'lucide-react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { ProcessSkeleton } from './process-skeleton';
 import { usePushParams } from '@/hooks/use-push-params';
@@ -18,9 +7,6 @@ import { usePushParams } from '@/hooks/use-push-params';
 import { queryClient } from '@/lib/react-query';
 import ProcessService from '@/services/process.service';
 import ProcessItem from './process-item';
-
-import { useSession } from 'next-auth/react';
-import { useSocket } from '../_context/SocketContext';
 
 export default function ProcessList() {
   const [push] = usePushParams();

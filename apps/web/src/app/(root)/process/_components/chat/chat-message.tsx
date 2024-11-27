@@ -1,6 +1,6 @@
 import React from 'react';
 
-interface MessageBubbleProps {
+interface ChatMessageProps {
   content: string;
   sender: string;
   isSender: boolean;
@@ -8,7 +8,7 @@ interface MessageBubbleProps {
   color: string;
 }
 
-const MessageBubble: React.FC<MessageBubbleProps> = ({
+const ChatMessage: React.FC<ChatMessageProps> = ({
   content,
   sender,
   isSender,
@@ -33,4 +33,4 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   );
 };
 
-export default MessageBubble;
+export default ChatMessage;

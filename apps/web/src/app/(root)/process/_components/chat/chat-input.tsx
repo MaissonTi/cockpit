@@ -5,7 +5,8 @@ const ChatInput: React.FC = () => {
   const [message, setMessage] = useState('');
   const { sendMessage } = useChat();
 
-  const handleSend = () => {
+  const handleSend = (e) => {
+    e.preventDefault();
     if (message.trim()) {
       sendMessage(message);
       setMessage('');
@@ -14,7 +15,7 @@ const ChatInput: React.FC = () => {
 
   return (
     <div className="flex flex-col space-y-2">
-      <div className="flex items-center space-x-2">
+      <form className="flex items-center space-x-2" onSubmit={handleSend}>
         <input
           type="text"
           placeholder="Digite sua mensagem..."
@@ -23,12 +24,12 @@ const ChatInput: React.FC = () => {
           onChange={(e) => setMessage(e.target.value)}
         />
         <button
-          onClick={handleSend}
+          type="submit"
           className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
         >
           Enviar
         </button>
-      </div>
+      </form>
     </div>
   );
 };

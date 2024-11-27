@@ -17,13 +17,8 @@
     "strictNullChecks": false,
     "strictBindCallApply": false,
     "paths": {
-      "@/*": [
-        "src/*"
-      ],
-      "@repo/domain/*": ["packages/domain/src"],
-      "@test/*": [
-        "test/*"
-      ],
-    },
+      "@/*": ["src/*"],
+      "@test/*": ["test/*"]
+    }
   }
 }
