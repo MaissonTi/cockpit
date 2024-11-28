@@ -1,17 +1,19 @@
 import React from 'react';
-import ChatWindow from './chat-window';
 import ChatInput from './chat-input';
+import ChatWindow from './chat-window';
+
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 
 const Chat: React.FC = () => {
   return (
-    <div className="flex flex-col h-full max-w-md mx-auto bg-white shadow-lg">
-      <div className="p-4">
+    <Card className="flex flex-col h-full max-w-md mx-auto bg-white shadow-lg">
+      <CardContent className="p-4">
         <ChatWindow />
-      </div>
-      <div className="p-4">
+      </CardContent>
+      <CardFooter className="flex flex-col space-y-2 p-4">
         <ChatInput />
-      </div>
-    </div>
+      </CardFooter>
+    </Card>
   );
 };
 

@@ -9,6 +9,9 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontSize: {
+        xss: '0.685rem',
+      },
       animation: {
         slideInRight: 'slideInRight 0.5s ease-out',
         slideInLeft: 'slideInLeft 0.5s ease-out',
