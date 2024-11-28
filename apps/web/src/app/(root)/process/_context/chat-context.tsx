@@ -3,12 +3,11 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { useSession } from 'next-auth/react';
-import { useSocket } from './SocketContext';
+import { useSocket } from './socket-context';
 import { User } from 'next-auth';
 import UserMessageService from '@/services/user-message.service';
 import { useQuery } from '@tanstack/react-query';
-
-import { UserMessageModel as Message } from '@repo/domain/models/user-message.model';
+import { UserMessageResponseDTO as Message } from '@repo/domain/dtos/user-message.dto';
 
 interface Options {
   group?: string;
@@ -74,7 +73,7 @@ const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const sendMessage = (content: string) => {
     if (!socket && !group && !session) return;
 
-    const newMessage: Message & { username: string; timestamp: string } = {
+    const newMessage: Omit<Message, 'createdAt'> = {
       id: String(Date.now()),
       content: content,
       username: session?.name!,

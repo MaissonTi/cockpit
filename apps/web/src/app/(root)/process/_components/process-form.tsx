@@ -1,6 +1,6 @@
 'use client';
 import Chat from './chat/chat';
-import { useChat } from '../_context/ChatContext';
+import { useChat } from '../_context/chat-context';
 interface Props {
   params: {
     group: string;

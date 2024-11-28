@@ -1,5 +1,5 @@
-import { SocketProvider } from './_context/SocketContext';
-import ChatProvider from './_context/ChatContext';
+import { SocketProvider } from './_context/socket-context';
+import ChatProvider from './_context/chat-context';
 export async function ProcessLayout({
   children, // will be a page or nested layout
 }: {

@@ -1,7 +1,7 @@
 import React from 'react';
 import ChatMessage from './chat-message';
 import useChatScroll from '../../_hooks/useChatScroll';
-import { useChat } from '../../_context/ChatContext';
+import { useChat } from '../../_context/chat-context';
 
 const ChatWindow: React.FC = () => {
   const { session, messages } = useChat();

@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { useChat } from '../../_context/ChatContext';
+import React, { FormEvent, useState } from 'react';
+import { useChat } from '../../_context/chat-context';
 
 const ChatInput: React.FC = () => {
   const [message, setMessage] = useState('');
   const { sendMessage } = useChat();
 
-  const handleSend = (e) => {
+  const handleSend = (e: FormEvent) => {
     e.preventDefault();
     if (message.trim()) {
       sendMessage(message);
