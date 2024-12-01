@@ -1,13 +1,13 @@
 'use client';
+import UserMessageService from '@/services/user-message.service';
+import { UserMessageResponseDTO as Message } from '@repo/domain/dtos/user-message.dto';
+import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { useSession } from 'next-auth/react';
-import { useSocket } from './socket-context';
 import { User } from 'next-auth';
-import UserMessageService from '@/services/user-message.service';
-import { useQuery } from '@tanstack/react-query';
-import { UserMessageResponseDTO as Message } from '@repo/domain/dtos/user-message.dto';
+import { useSession } from 'next-auth/react';
+import React, { createContext, ReactNode, useContext, useState } from 'react';
+import { useSocket } from './socket-context';
 
 interface Options {
   group?: string;
@@ -17,7 +17,7 @@ interface Options {
 type ChatContextProps = {
   group?: string;
   setGroup: (group: string) => void;
-  setMessages: (message: Message[]) => void;
+  setMessages: (message: Message[]) => void; 
   session: User | null;
   messages: Message[];
   sendMessage: (content: string) => void;
