@@ -1,13 +1,13 @@
+import { IUserMessageRepository } from '@/domain/protocols/database/repositories/user-message.repository.interface';
 import {
   Paginated,
   Pagination,
 } from '@/domain/protocols/database/types/pagination.types';
-import { PrismaService } from '../prisma.service';
-import { Repositories } from './_repositories.abstract';
-import { IUserMessageRepository } from '@/domain/protocols/database/repositories/user-message.repository.interface';
+import { UsersMessagens as UsersMessagensPrisma } from '@prisma/client';
 import { UserMessageModel } from '@repo/domain/models/user-message.model';
 import { UserMessageMapper } from '../mapper/user-message.mapper';
-import { UsersMessagens as UsersMessagensPrisma } from '@prisma/client';
+import { PrismaService } from '../prisma.service';
+import { Repositories } from './_repositories.abstract';
 
 export class UserMessageRepository extends Repositories {
   constructor(protected readonly prisma: PrismaService) {
@@ -62,7 +62,7 @@ export class UserMessageRepository extends Repositories {
           },
         },
         ...this.pageSkipTake(pagination),
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: 'asc' },
       }),
     ]);
 

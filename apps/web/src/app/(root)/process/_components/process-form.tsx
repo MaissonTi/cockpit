@@ -1,6 +1,7 @@
 'use client';
-import Chat from './chat/chat';
 import { useChat } from '../_context/chat-context';
+import Batch from './batch/batch';
+import Chat from './chat/chat';
 interface Props {
   params: {
     group: string;
@@ -12,16 +13,14 @@ function ProcessForm({ params: { group, messages } }: Props) {
   useChat({ group, messages });
 
   return (
-    <Chat />
-    // <div className="grid md:grid-cols-4 gap-4 my-10">
-    //   <div style={{ border: '1px solid red' }} className="flex-1">
-    //     <Chat />
-    //   </div>
-    //   <div style={{ border: '1px solid red' }} className="col-span-2">
-    //     Lances
-    //   </div>
-    //   <div style={{ border: '1px solid red' }}>Historico</div>
-    // </div>
+    <div className="mx-2 grid md:grid-cols-4">
+      <div>
+        <Chat />
+      </div>
+      <div className="col-span-3">
+        <Batch />
+      </div>
+    </div>
   );
 }
 

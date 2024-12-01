@@ -1,21 +1,21 @@
 // src/chat.gateway.ts
-import { forwardRef, Inject, UseGuards } from '@nestjs/common';
+import { IUserMessageRepository } from '@/domain/protocols/database/repositories/user-message.repository.interface';
+import { Inject } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import {
-  SubscribeMessage,
-  WebSocketGateway,
+  ConnectedSocket,
+  MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
-  MessageBody,
+  SubscribeMessage,
+  WebSocketGateway,
   WebSocketServer,
-  ConnectedSocket,
   WsException,
 } from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
-import { JwtService } from '@nestjs/jwt';
-import { EnvService } from '../env/env.service';
-import { IUserMessageRepository } from '@/domain/protocols/database/repositories/user-message.repository.interface';
-import { UserMessageRepository } from '../database/prisma/repositories/user-message.repositories';
 import { UserMessageModel } from '@repo/domain/models/user-message.model';
+import { Server, Socket } from 'socket.io';
+import { UserMessageRepository } from '../database/prisma/repositories/user-message.repositories';
+import { EnvService } from '../env/env.service';
 
 interface Bid {
   user: string;
@@ -103,6 +103,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const group = messageBody.destinateId;
     const message = { ...messageBody, username: user.username } as Message;
 
+    console.log('group', group, 'message', message.content);
+
     if (!group) {
       client.emit('error', 'Grupo não especificado.');
       return;
@@ -123,6 +125,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() { group, user }: { group: string; user: string },
     @ConnectedSocket() client: Socket,
   ): void {
+    const rooms = Array.from(client.rooms);
+    for (const room of rooms) {
+      if (room !== client.id) {
+        client.leave(room);
+      }
+    }
+
     client.join(group);
 
     console.log(`Usuario ${user} entrou no grupo ${group}`);
