@@ -1,16 +1,9 @@
 'use client';
-import UserMessageService from '@/services/user-message.service';
-import { UserMessageResponseDTO as Message } from '@repo/domain/dtos/user-message.dto';
-import { useQuery } from '@tanstack/react-query';
+import { Batch } from '@/services/process.service';
 import { User } from 'next-auth';
 import { useSession } from 'next-auth/react';
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, ReactNode, useContext, useState } from 'react';
 import { useSocket } from './socket-context';
-
-interface Options {
-  group?: string;
-  messages?: Message[];
-}
 
 type EventTimer = 'startTimer' | 'pauseTimer' | 'stopTimer' | 'resumeTimer';
 
@@ -18,84 +11,147 @@ type BatchContextProps = {
   group?: string;
   setGroup: (group: string) => void;
   session: User | null;
+  timerActive: boolean;
+  timeRemaining: number;
+  notification: string | null;
+  winner: Bid | null;
+  timerEvent: (event: EventTimer, batch: string[]) => void;
+  batch: Batch[];
+  setBatch: (batch: Batch[]) => void;
 };
 
-type UseBatchProps = Omit<BatchContextProps, 'setGroup'>;
+type UseBatchProps = Omit<BatchContextProps, 'setGroup' | 'setBatch'>;
 
 const BatchContext = createContext<BatchContextProps | undefined>(undefined);
 
-const BatchProvider: React.FC = ({ children }) => {
+interface Bid {
+  user: string;
+  amount: number;
+}
+
+const BatchProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { socket } = useSocket();
   const { data: session } = useSession();
   const [group, setGroup] = useState<string>('');
-  const [batch, setBatch] = useState<number[]>([]);
+  const [batch, setBatch] = useState<Batch[]>([]);
+  const [timerActive, setTimerActive] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState(0);
+  const [notification, setNotification] = useState<string | null>(null);
+  const [winner, setWinner] = useState<Bid | null>(null);
 
-  const { data: result } = useQuery({
-    queryKey: ['user-message', group],
-    queryFn: () =>
-      UserMessageService.list({
-        currentPage: 1,
-        perPage: 20,
-        filters: {
-          destinateId: group,
-        },
-      }),
-  });
+  // const { data: result } = useQuery({
+  //   queryKey: ['user-message', group],
+  //   queryFn: () =>
+  //     UserMessageService.list({
+  //       currentPage: 1,
+  //       perPage: 20,
+  //       filters: {
+  //         destinateId: group,
+  //       },
+  //     }),
+  // });
 
-  React.useEffect(() => {
-    if (result) {
-      //setMessages(result.data);
-    }
-  }, [result]);
+  // React.useEffect(() => {
+  //   if (result) {
+  //     setBatch(result.data);
+  //   }
+  // }, [result]);
 
   React.useEffect(() => {
     if (!socket || !group || !session) return;
 
-    socket.emit('joinGroup', {
-      group: group,
-      user: session.name,
+    socket.on('timerUpdate', ({ timerActive, timeRemaining }) => {
+      setTimerActive(timerActive);
+      setTimeRemaining(timeRemaining);
     });
 
-    // socket.on('message', message => {
-    //   setMessages(prev => {
-    //     return [...prev, message];
-    //   });
-    // });
+    socket.on('timerNotification', (data: { message: string }) => {
+      setNotification(data.message);
+
+      // Remove a notificação após 5 segundos
+      setTimeout(() => {
+        setNotification(null);
+      }, 5000);
+    });
+
+    socket.on('winnerAnnounced', (highestBid: Bid) => {
+      setWinner(highestBid);
+    });
 
     return () => {
-      socket.off('message');
+      socket.off('timerUpdate');
     };
   }, [socket, group]);
 
-  const timerEvent = (event: EventTimer, batch: number[]) => {
+  const timerEvent = (event: EventTimer, batch: string[]) => {
     if (!socket && !group && !session) return;
+
+    console.log('timerEvent', event, batch);
 
     socket!.emit(event, { group, batch });
   };
 
   return (
-    <BatchContext.Provider value={{ group, setGroup, session, timerEvent }}>
+    <BatchContext.Provider
+      value={{
+        group,
+        setGroup,
+        session,
+        timerEvent,
+        notification,
+        timerActive,
+        timeRemaining,
+        winner,
+        batch,
+        setBatch,
+      }}
+    >
       {children}
     </BatchContext.Provider>
   );
 };
 
+interface Options {
+  group?: string;
+  batch?: Batch[];
+}
+
 export const useBatch = (options?: Options): UseBatchProps => {
   const context = useContext(BatchContext);
   if (!context) throw new Error('useBatch must be used within a BatchProvider');
 
-  const { session, setGroup, group } = context;
+  const {
+    session,
+    setGroup,
+    group,
+    notification,
+    timerActive,
+    timeRemaining,
+    timerEvent,
+    winner,
+    batch,
+    setBatch,
+  } = context;
 
   React.useEffect(() => {
     if (options?.group) {
       setGroup(options?.group);
     }
-    // if (options?.messages) {
-    //   setMessages(options?.messages);
-    // }
+    if (options?.batch) {
+      setBatch(options?.batch);
+    }
   }, []);
 
-  return { session, group };
+  return {
+    session,
+    group,
+    notification,
+    timerActive,
+    timeRemaining,
+    timerEvent,
+    winner,
+    batch,
+  };
 };
 
 export default BatchProvider;

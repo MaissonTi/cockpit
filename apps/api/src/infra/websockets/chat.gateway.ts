@@ -16,6 +16,7 @@ import { UserMessageModel } from '@repo/domain/models/user-message.model';
 import { Server, Socket } from 'socket.io';
 import { UserMessageRepository } from '../database/prisma/repositories/user-message.repositories';
 import { EnvService } from '../env/env.service';
+import { TimerService } from './timer.service';
 
 interface Bid {
   user: string;
@@ -50,6 +51,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private jwtService: JwtService,
     private config: EnvService,
+    private readonly timerService: TimerService,
   ) {}
 
   // Estado dos grupos
@@ -82,6 +84,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       });
 
       client.data.user = decoded;
+      console.log(decoded);
       console.log(`Usuário conectado: ${decoded.username}`);
     } catch (error) {
       console.log('Conexão recusada. Token inválido.');
@@ -355,26 +358,35 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('startTimer')
   handleStartTimer(
-    @MessageBody() { group, user }: { group: string; user: string },
+    @MessageBody() { group }: { group: string },
+    @ConnectedSocket() client: Socket,
   ): void {
+    const user = client.data.user;
+    console.log('ENTROU', this.groups[group]);
+
     const groupState = this.groups[group];
 
-    if (!groupState || groupState.admin !== user) {
+    if (!groupState || user.role !== 'ADMIN') {
+      console.log('SAIU 1');
       return;
     }
 
     if (groupState.timerActive) {
+      console.log('SAIU 2');
       return;
     }
 
+    console.log('PASSOU');
+
     groupState.timerActive = true;
-    groupState.timeRemaining = 120;
+    groupState.timeRemaining = 60 * 1; // 10 minutos
 
     this.server.to(group).emit('timerUpdate', {
       timerActive: true,
       timeRemaining: groupState.timeRemaining,
     });
 
+    console.log('END');
     groupState.intervalId = setInterval(() => {
       groupState.timeRemaining -= 1;
 

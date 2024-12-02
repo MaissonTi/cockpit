@@ -35,7 +35,7 @@ interface ListParams {
   filters?: unknown;
 }
 
-interface ListReponse<T> {
+export interface ListReponse<T> {
   data: T[];
   currentPage: number;
   lastPage: number;

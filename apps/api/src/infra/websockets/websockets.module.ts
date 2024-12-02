@@ -1,12 +1,13 @@
-import { forwardRef, Module } from '@nestjs/common';
-import { ChatGateway } from './chat.gateway';
-import { EnvModule } from '../env/env.module';
+import { Module } from '@nestjs/common';
+import { ScheduleModule } from '@nestjs/schedule';
 import { DatabaseModule } from '../database/_database.module';
-import { UserMessageRepository } from '../database/prisma/repositories/user-message.repositories';
+import { EnvModule } from '../env/env.module';
+import { ChatGateway } from './chat.gateway';
+import { TimerService } from './timer.service';
 
 @Module({
-  imports: [EnvModule, DatabaseModule],
-  providers: [ChatGateway],
+  imports: [EnvModule, DatabaseModule, ScheduleModule.forRoot()],
+  providers: [ChatGateway, TimerService],
   exports: [ChatGateway],
 })
 export class WebsocketsModule {}
