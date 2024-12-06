@@ -83,14 +83,14 @@ export default function (plop: NodePlopAPI) {
       actions.push({
         type: "add",
         path: path.resolve(ROOT_MONOREPO, "apps/api/src/app/usecases", "{{ kebabCase (or selected_module usecase_name) }}", "{{kebabCase usecase_name}}.usecase.ts"),
-        templateFile: "templates/api/usecase-only/usecase.ts.hbs",
+        templateFile: "templates/backend/usecase-only/usecase.ts.hbs",
         skipIfExists: true,
       })
 
       actions.push({
         type: "add",
         path: path.resolve(ROOT_MONOREPO, "apps/api/src/domain/usecases", "{{ kebabCase (or selected_module usecase_name) }}", "{{kebabCase usecase_name}}.usecase.interface.ts"),
-        templateFile: "templates/api/usecase-only/usecase.interface.ts.hbs",
+        templateFile: "templates/backend/usecase-only/usecase.interface.ts.hbs",
         skipIfExists: true,
       })
 
@@ -98,7 +98,7 @@ export default function (plop: NodePlopAPI) {
         actions.push({
           type: "add",
           path: path.resolve(ROOT_MONOREPO, "apps/api/src/app/usecases", "{{ kebabCase (or selected_module usecase_name) }}", "_{{kebabCase usecase_name}}.module.ts"),
-          templateFile: "templates/api/usecase-only/usecase.module.ts.hbs",
+          templateFile: "templates/backend/usecase-only/usecase.module.ts.hbs",
           skipIfExists: true,
         })
       }
@@ -107,14 +107,14 @@ export default function (plop: NodePlopAPI) {
         actions.push({
           type: "add",
           path: path.resolve(ROOT_MONOREPO, "apps/api/src/presentation/http/controllers", "{{kebabCase usecase_name}}.controller.ts"),
-          templateFile: "templates/api/usecase-only/usecase.controller.ts.hbs",
+          templateFile: "templates/backend/usecase-only/usecase.controller.ts.hbs",
           skipIfExists: true,
         })
 
         actions.push({
           type: "add",
           path: path.resolve(ROOT_MONOREPO, "apps/api/src/presentation/http/dtos", "{{kebabCase usecase_name}}.dto.ts"),
-          templateFile: "templates/api/usecase-only/usecase.dto.ts.hbs",
+          templateFile: "templates/backend/usecase-only/usecase.dto.ts.hbs",
           skipIfExists: true,
         })
       }
