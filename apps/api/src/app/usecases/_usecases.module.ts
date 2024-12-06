@@ -1,14 +1,16 @@
 import { Module } from '@nestjs/common';
-import { ProcessDisputeModule } from './process-dispute/_process-dispute.module';
 import { AuthenticateModule } from './authenticate/_authenticate.module';
-import { UserModule } from './user/_user.module';
+import { BatchModule } from './batch/_batch.module';
+import { ProcessDisputeModule } from './process-dispute/_process-dispute.module';
 import { UserMessageModule } from './user-message/_user-message.module';
+import { UserModule } from './user/_user.module';
 @Module({
   imports: [
     UserModule,
     AuthenticateModule,
     ProcessDisputeModule,
     UserMessageModule,
+    BatchModule,
   ],
   providers: [],
   exports: [
@@ -16,6 +18,7 @@ import { UserMessageModule } from './user-message/_user-message.module';
     AuthenticateModule,
     ProcessDisputeModule,
     UserMessageModule,
+    BatchModule,
   ],
 })
 export class UseCasesModule {}

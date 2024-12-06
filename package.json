@@ -15,7 +15,8 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "gencc": "turbo gencc",
     "clear": "pnpm store prune && find . -name 'dist' -type d -prune -exec rm -rf '{}' + && find . -name 'node_modules' -type d -prune -exec rm -rf '{}' +",
-    "prisma:init": "cd apps/api && pnpm run prisma:init"
+    "prisma:init": "cd apps/api && pnpm run prisma:init",
+    "gen": "turbo gen"
   },
   "dependencies": {
     "date-fns": "^4.1.0",

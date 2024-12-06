@@ -21,12 +21,12 @@ export default function (plop: NodePlopAPI) {
     ],
     actions: function(data) {
       let actions: ActionType[] = [];
-
+      
       // #### Model ####
       actions.push({
         type: "add",
         path: path.resolve(ROOT_MONOREPO, "apps/api/src/domain/models", "{{kebabCase usecase_name}}.model.ts"),
-        templateFile: "templates/api/crud/model.hbs",
+        templateFile: "templates/backend/crud/model.hbs",
         skipIfExists: true,
       })
 
@@ -34,44 +34,44 @@ export default function (plop: NodePlopAPI) {
       actions.push({
         type: "add",
         path: path.resolve(ROOT_MONOREPO, "apps/api/src/domain/protocols/database/repositories", "{{kebabCase usecase_name}}.repository.interface.ts"),
-        templateFile: "templates/api/crud/database/repository.interface.hbs",
+        templateFile: "templates/backend/crud/database/repository.interface.hbs",
         skipIfExists: true,
       })
 
       actions.push({
         type: "add",
         path: path.resolve(ROOT_MONOREPO, "apps/api/src/infra/database/prisma/repositories", "{{kebabCase usecase_name}}.repository.ts"),
-        templateFile: "templates/api/crud/database/repository.hbs",
+        templateFile: "templates/backend/crud/database/repository.hbs",
         skipIfExists: true,
       })
 
       actions.push({
         type: "add",
         path: path.resolve(ROOT_MONOREPO, "apps/api/src/infra/database/prisma/mapper", "{{kebabCase usecase_name}}.mapper.ts"),
-        templateFile: "templates/api/crud/database/mapper.hbs",
+        templateFile: "templates/backend/crud/database/mapper.hbs",
         skipIfExists: true,
       })
 
       actions.push({
         type: "append",
         path: path.resolve(ROOT_MONOREPO, "apps/api/src/infra/database/prisma", "schema.prisma"),
-        templateFile: "templates/api/crud/database/prisma.hbs",
+        templateFile: "templates/backend/crud/database/prisma.hbs",
       })
 
       // #### UseCase's ####
       actions.push({
         type: "addMany",
         destination: path.resolve(ROOT_MONOREPO, "apps/api/src/app/usecases", "{{kebabCase usecase_name}}"),
-        base: "templates/api/crud/usecase",
-        templateFiles: "templates/api/crud/usecase/*.hbs",
+        base: "templates/backend/crud/usecase",
+        templateFiles: "templates/backend/crud/usecase/*.hbs",
         skipIfExists: true,
       })
 
       actions.push({
         type: "addMany",
         destination: path.resolve(ROOT_MONOREPO, "apps/api/src/domain/usecases", "{{kebabCase usecase_name}}"),
-        base: "templates/api/crud/usecase.interface",
-        templateFiles: "templates/api/crud/usecase.interface/*.hbs",
+        base: "templates/backend/crud/usecase.interface",
+        templateFiles: "templates/backend/crud/usecase.interface/*.hbs",
         skipIfExists: true,
       })
 
@@ -79,22 +79,22 @@ export default function (plop: NodePlopAPI) {
       actions.push({
         type: "addMany",
         destination: path.resolve(ROOT_MONOREPO, "apps/api/test/unit/app/usecases", "{{kebabCase usecase_name}}"),
-        base: "templates/api/crud/usecase.test",
-        templateFiles: "templates/api/crud/usecase.test/*.usecase.spec.ts.hbs",
+        base: "templates/backend/crud/usecase.test",
+        templateFiles: "templates/backend/crud/usecase.test/*.usecase.spec.ts.hbs",
         skipIfExists: true,
       })
 
       actions.push({
         type: "add",
         path: path.resolve(ROOT_MONOREPO, "apps/api/test/_mock/model", "{{kebabCase usecase_name}}.mock.ts"),
-        templateFile: "templates/api/crud/usecase.test/mock.ts.hbs",
+        templateFile: "templates/backend/crud/usecase.test/mock.ts.hbs",
         skipIfExists: true,
       })
 
       actions.push({
         type: "add",
         path: path.resolve(ROOT_MONOREPO, "apps/api/test/_mock/repository", "{{kebabCase usecase_name}}.repository.mock.ts"),
-        templateFile: "templates/api/crud/usecase.test/repository.mock.ts.hbs",
+        templateFile: "templates/backend/crud/usecase.test/repository.mock.ts.hbs",
         skipIfExists: true,
       })
 
@@ -102,21 +102,21 @@ export default function (plop: NodePlopAPI) {
       actions.push({
         type: "add",
         path: path.resolve(ROOT_MONOREPO, "apps/api/src/presentation/http/controllers", "{{kebabCase usecase_name}}.controller.ts"),
-        templateFile: "templates/api/crud/http/controller.hbs",
+        templateFile: "templates/backend/crud/http/controller.hbs",
         skipIfExists: true,
       })
 
       actions.push({
         type: "add",
         path: path.resolve(ROOT_MONOREPO, "apps/api/src/presentation/http/dtos", "{{kebabCase usecase_name}}.dto.ts"),
-        templateFile: "templates/api/crud/http/dtos.hbs",
+        templateFile: "templates/backend/crud/http/dtos.hbs",
         skipIfExists: true,
       })
 
       actions.push({
         type: "add",
         path: path.resolve(ROOT_MONOREPO, "apps/api/src/presentation/http/presenters", "{{kebabCase usecase_name}}.presenter.ts"),
-        templateFile: "templates/api/crud/http/presenter.hbs",
+        templateFile: "templates/backend/crud/http/presenter.hbs",
         skipIfExists: true,
       })
 
@@ -124,7 +124,7 @@ export default function (plop: NodePlopAPI) {
       actions.push({
         type: "add",
         path: path.resolve(ROOT_MONOREPO, "apps/api/.http", "{{kebabCase usecase_name}}.http"),
-        templateFile: "templates/api/crud/http/client.http.hbs",
+        templateFile: "templates/backend/crud/http/client.http.hbs",
         skipIfExists: true,
       })
 
