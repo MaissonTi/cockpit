@@ -14,12 +14,12 @@ export default async function ProcessDisputPage({ params }: PageProps) {
   }
 
   const { data: messages } = await getMessages(params.uuid);
-  const batch = await getProcess(params.uuid);
+  const batchs = await getProcess(params.uuid);
 
   return (
     <div className="space-y-4 py-4">
       <main className="space-y-4">
-        <ProcessForm params={{ group: params.uuid, messages, batch }} />
+        <ProcessForm params={{ group: params.uuid, messages, batchs }} />
       </main>
     </div>
   );

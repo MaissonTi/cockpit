@@ -1,0 +1,77 @@
+import { Create{{ pascalCase usecase_name }}UseCase } from '@/app/usecases/{{ kebabCase usecase_name }}/create-{{ kebabCase usecase_name }}.usecase';
+import { Delete{{ pascalCase usecase_name }}UseCase } from '@/app/usecases/{{ kebabCase usecase_name }}/delete-{{ kebabCase usecase_name }}.usecase';
+import { Get{{ pascalCase usecase_name }}UseCase } from '@/app/usecases/{{ kebabCase usecase_name }}/get-{{ kebabCase usecase_name }}.usecase';
+import { List{{ pascalCase usecase_name }}UseCase } from '@/app/usecases/{{ kebabCase usecase_name }}/list-{{ kebabCase usecase_name }}.usecase';
+import { Update{{ pascalCase usecase_name }}UseCase } from '@/app/usecases/{{ kebabCase usecase_name }}/update-{{ kebabCase usecase_name }}.usecase';
+import { ICreate{{ pascalCase usecase_name }}UseCase } from '@/domain/usecases/{{ kebabCase usecase_name }}/create-{{ kebabCase usecase_name }}.usecase.interface';
+import { IDelete{{ pascalCase usecase_name }}UseCase } from '@/domain/usecases/{{ kebabCase usecase_name }}/delete-{{ kebabCase usecase_name }}.usecase.interface';
+import { IGet{{ pascalCase usecase_name }}UseCase } from '@/domain/usecases/{{ kebabCase usecase_name }}/get-{{ kebabCase usecase_name }}.usecase.interface';
+import { IList{{ pascalCase usecase_name }}UseCase } from '@/domain/usecases/{{ kebabCase usecase_name }}/list-{{ kebabCase usecase_name }}.usecase.interface';
+import { IUpdate{{ pascalCase usecase_name }}UseCase } from '@/domain/usecases/{{ kebabCase usecase_name }}/update-{{ kebabCase usecase_name }}.usecase.interface';
+import { Public } from '@/infra/auth/public';
+import { Body, Controller, Delete, Get, Inject, Param, ParseUUIDPipe, Post, Put, Query } from '@nestjs/common';
+import { ApiBadRequestResponse, ApiNoContentResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  {{ pascalCase usecase_name }}CreateRequestDTO,
+  {{ pascalCase usecase_name }}ListQueryDTO,
+  {{ pascalCase usecase_name }}ListResponseDTO,
+  {{ pascalCase usecase_name }}ResponseDTO,
+  {{ pascalCase usecase_name }}UpdateRequestDTO,
+} from '../dtos/{{ kebabCase usecase_name }}.dto';
+import { {{ pascalCase usecase_name }}Presenter } from '../presenters/{{ kebabCase usecase_name }}.presenter';
+
+@ApiTags('{{ pascalCase usecase_name }}')
+@Controller('{{ kebabCase usecase_name }}')
+@Public()
+export class {{ pascalCase usecase_name }}Controller {
+  constructor(
+    @Inject(Create{{ pascalCase usecase_name }}UseCase.name)
+    private readonly create{{ pascalCase usecase_name }}UseCase: ICreate{{ pascalCase usecase_name }}UseCase,
+    @Inject(List{{ pascalCase usecase_name }}UseCase.name)
+    private readonly list{{ pascalCase usecase_name }}UseCase: IList{{ pascalCase usecase_name }}UseCase,
+    @Inject(Update{{ pascalCase usecase_name }}UseCase.name)
+    private readonly update{{ pascalCase usecase_name }}UseCase: IUpdate{{ pascalCase usecase_name }}UseCase,
+    @Inject(Delete{{ pascalCase usecase_name }}UseCase.name)
+    private readonly delete{{ pascalCase usecase_name }}UseCase: IDelete{{ pascalCase usecase_name }}UseCase,
+    @Inject(Get{{ pascalCase usecase_name }}UseCase.name)
+    private readonly get{{ pascalCase usecase_name }}UseCase: IGet{{ pascalCase usecase_name }}UseCase,
+  ) {}
+
+  @Post()
+  @ApiOperation({ summary: 'Create a {{ pascalCase usecase_name }}' })
+  @ApiNoContentResponse({ description: '{{ pascalCase usecase_name }} created' })
+  @ApiBadRequestResponse({ description: '{{ pascalCase usecase_name }} already exists!' })
+  async create(@Body() { name }: {{ pascalCase usecase_name }}CreateRequestDTO): Promise<{{ pascalCase usecase_name }}ResponseDTO> {
+    const result = await this.create{{ pascalCase usecase_name }}UseCase.execute({ name });
+    return {{ pascalCase usecase_name }}Presenter.toHTTP<{{ pascalCase usecase_name }}ResponseDTO>(result).get();
+  }
+
+  @Get(':id')
+  async find(@Param('id', new ParseUUIDPipe()) id: string): Promise<{{ pascalCase usecase_name }}ResponseDTO | null> {
+    const result = await this.get{{ pascalCase usecase_name }}UseCase.execute(id);
+    return {{ pascalCase usecase_name }}Presenter.toHTTP<{{ pascalCase usecase_name }}ResponseDTO>(result).get();
+  }
+
+  @Get()
+  async list(@Query() { currentPage, perPage, ...filter }: {{ pascalCase usecase_name }}ListQueryDTO): Promise<{{ pascalCase usecase_name }}ListResponseDTO> {
+    const result = await this.list{{ pascalCase usecase_name }}UseCase.execute(filter, { currentPage, perPage });
+    return {
+      ...result,
+      data: result.data.map(item => {{ pascalCase usecase_name }}Presenter.toHTTP<{{ pascalCase usecase_name }}ResponseDTO>(item).get()),
+    };
+  }
+
+  @Put(':id')
+  async update(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() data: {{ pascalCase usecase_name }}UpdateRequestDTO,
+  ): Promise<{{ pascalCase usecase_name }}ResponseDTO> {
+    const result = await this.update{{ pascalCase usecase_name }}UseCase.execute(id, data);
+    return {{ pascalCase usecase_name }}Presenter.toHTTP<{{ pascalCase usecase_name }}ResponseDTO>(result).get();
+  }
+
+  @Delete(':id')
+  async delete(@Param('id', new ParseUUIDPipe()) id: string): Promise<void> {
+    await this.delete{{ pascalCase usecase_name }}UseCase.execute(id);
+  }
+}

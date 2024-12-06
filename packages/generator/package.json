@@ -1,0 +1,17 @@
+{
+  "name": "@common/generator",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "gen": "cross-env NODE_OPTIONS=\"--import tsx\" plop --plopfile=plopfile.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "plop": "^4.0.1",
+    "tsx": "^4.15.2"
+  }
+}

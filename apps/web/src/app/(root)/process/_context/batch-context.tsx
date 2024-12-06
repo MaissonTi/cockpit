@@ -11,16 +11,25 @@ type BatchContextProps = {
   group?: string;
   setGroup: (group: string) => void;
   session: User | null;
-  timerActive: boolean;
-  timeRemaining: number;
   notification: string | null;
   winner: Bid | null;
-  timerEvent: (event: EventTimer, batch: string[]) => void;
-  batch: Batch[];
-  setBatch: (batch: Batch[]) => void;
+  timerEvent: (event: EventTimer, batchs: string[]) => void;
+  batchs: Batch[];
+  setBatchs: (batch: Batch[]) => void;
+  batchMap: Map<string, BatchTimer>;
+  placeBid: (batch: string, amount: number) => void;
+  bidsMap: Map<string, Batchbids[]>;
 };
 
-type UseBatchProps = Omit<BatchContextProps, 'setGroup' | 'setBatch'>;
+type BatchTimer = {
+  timerActive: boolean;
+  timeRemaining: number;
+};
+
+type UseBatchProps = BatchTimer & { birds: any[] } & Omit<
+    BatchContextProps,
+    'setGroup' | 'setBatchs' | 'setCurrentBatch' | 'batchMap' | 'bidsMap'
+  >;
 
 const BatchContext = createContext<BatchContextProps | undefined>(undefined);
 
@@ -29,40 +38,41 @@ interface Bid {
   amount: number;
 }
 
+type Batchbids = {
+  user: string;
+  amount: number;
+};
+
 const BatchProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [batchMap, setBatchMap] = useState<Map<string, BatchTimer>>(new Map());
+  const [bidsMap, setBidsMap] = useState<Map<string, Batchbids[]>>(new Map());
+
   const { socket } = useSocket();
   const { data: session } = useSession();
   const [group, setGroup] = useState<string>('');
-  const [batch, setBatch] = useState<Batch[]>([]);
-  const [timerActive, setTimerActive] = useState(false);
-  const [timeRemaining, setTimeRemaining] = useState(0);
+  const [batchs, setBatchs] = useState<Batch[]>([]);
+
   const [notification, setNotification] = useState<string | null>(null);
   const [winner, setWinner] = useState<Bid | null>(null);
-
-  // const { data: result } = useQuery({
-  //   queryKey: ['user-message', group],
-  //   queryFn: () =>
-  //     UserMessageService.list({
-  //       currentPage: 1,
-  //       perPage: 20,
-  //       filters: {
-  //         destinateId: group,
-  //       },
-  //     }),
-  // });
-
-  // React.useEffect(() => {
-  //   if (result) {
-  //     setBatch(result.data);
-  //   }
-  // }, [result]);
 
   React.useEffect(() => {
     if (!socket || !group || !session) return;
 
-    socket.on('timerUpdate', ({ timerActive, timeRemaining }) => {
-      setTimerActive(timerActive);
-      setTimeRemaining(timeRemaining);
+    socket.on('timerUpdate', ({ timerActive, timeRemaining, batch }) => {
+      setBatchMap(
+        map => new Map(map.set(batch, { timerActive, timeRemaining })),
+      );
+    });
+
+    socket.on('bidsUpdate', ({ amount, batch, user }) => {
+      if (!batch) return;
+
+      console.log('bidsUpdate', amount, batch, user);
+
+      setBidsMap(map => {
+        const existingBids = map.get(batch) || [];
+        return new Map(map.set(batch, [...existingBids, { amount, user }]));
+      });
     });
 
     socket.on('timerNotification', (data: { message: string }) => {
@@ -83,12 +93,20 @@ const BatchProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     };
   }, [socket, group]);
 
-  const timerEvent = (event: EventTimer, batch: string[]) => {
+  const timerEvent = (event: EventTimer, batchs: string[]) => {
+    if (!socket && !group && !session) return;
+    socket!.emit(event, { group, batchs });
+  };
+
+  const placeBid = (batch: string, amount: number) => {
     if (!socket && !group && !session) return;
 
-    console.log('timerEvent', event, batch);
-
-    socket!.emit(event, { group, batch });
+    socket!.emit('bid', {
+      group,
+      batch,
+      user: session?.id,
+      amount,
+    });
   };
 
   return (
@@ -99,11 +117,12 @@ const BatchProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         session,
         timerEvent,
         notification,
-        timerActive,
-        timeRemaining,
+        batchMap,
         winner,
-        batch,
-        setBatch,
+        batchs,
+        setBatchs,
+        placeBid,
+        bidsMap,
       }}
     >
       {children}
@@ -113,7 +132,8 @@ const BatchProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
 
 interface Options {
   group?: string;
-  batch?: Batch[];
+  batchs?: Batch[];
+  currentBatch?: string;
 }
 
 export const useBatch = (options?: Options): UseBatchProps => {
@@ -125,22 +145,55 @@ export const useBatch = (options?: Options): UseBatchProps => {
     setGroup,
     group,
     notification,
-    timerActive,
-    timeRemaining,
+    batchMap,
     timerEvent,
     winner,
-    batch,
-    setBatch,
+    batchs,
+    setBatchs,
+    placeBid,
+    bidsMap,
   } = context;
+
+  const [timerActive, setTimerActive] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState(0);
+  const [currentBatch, setCurrentBatch] = useState<string | null>(null);
+  const [birds, setBirds] = useState<any[]>([]);
 
   React.useEffect(() => {
     if (options?.group) {
       setGroup(options?.group);
     }
-    if (options?.batch) {
-      setBatch(options?.batch);
+    if (options?.batchs) {
+      setBatchs(options?.batchs);
+    }
+    if (options?.currentBatch) {
+      setCurrentBatch(options?.currentBatch);
     }
   }, []);
+
+  React.useEffect(() => {
+    if (!currentBatch) return;
+
+    const timerData = batchMap.get(currentBatch!);
+
+    if (!timerData) return;
+
+    setTimerActive(timerData.timerActive);
+    setTimeRemaining(timerData.timeRemaining);
+  }, [currentBatch, batchMap]);
+
+  React.useEffect(() => {
+    if (!bidsMap.size) return;
+
+    const array = Array.from(bidsMap.entries()).map(([batch, bids]) => {
+      return {
+        batch,
+        birds: bids.map(({ user, amount }) => ({ user, amount })),
+      };
+    });
+
+    setBirds(array);
+  }, [currentBatch, bidsMap]);
 
   return {
     session,
@@ -150,7 +203,9 @@ export const useBatch = (options?: Options): UseBatchProps => {
     timeRemaining,
     timerEvent,
     winner,
-    batch,
+    batchs,
+    placeBid,
+    birds,
   };
 };
 

@@ -1,0 +1,40 @@
+import { Update{{ pascalCase usecase_name }}UseCase } from '@/app/usecases/{{ kebabCase usecase_name }}/update-{{ kebabCase usecase_name }}.usecase';
+import { I{{ pascalCase usecase_name }}Repository } from '@/domain/protocols/database/repositories/{{ kebabCase usecase_name }}.repository.interface';
+
+import { NotFoundException } from '@nestjs/common';
+import { mock{{ pascalCase usecase_name }}, mock{{ pascalCase usecase_name }}Update } from '@test/_mock/model/{{ kebabCase usecase_name }}.mock';
+import { mock{{ pascalCase usecase_name }}Repository } from '@test/_mock/repository/{{ kebabCase usecase_name }}.repository.mock';
+
+interface SutTypes {
+  sut: Update{{ pascalCase usecase_name }}UseCase;
+  {{ camelCase usecase_name }}Repository: I{{ pascalCase usecase_name }}Repository;
+}
+
+const makeSut = (): SutTypes => {
+  const {{ camelCase usecase_name }}Repository: I{{ pascalCase usecase_name }}Repository = mock{{ pascalCase usecase_name }}Repository();
+
+  const sut = new Update{{ pascalCase usecase_name }}UseCase({{ camelCase usecase_name }}Repository);
+  return { sut, {{ camelCase usecase_name }}Repository };
+};
+describe('Update{{ pascalCase usecase_name }}UseCase', () => {
+  it('should update a {{ pascalCase usecase_name }}', async () => {
+    const { sut, {{ camelCase usecase_name }}Repository } = makeSut();
+
+    const result = await sut.execute(mock{{ pascalCase usecase_name }}.id, mock{{ pascalCase usecase_name }}Update);
+
+    expect(result.name).toEqual('New Name');
+    expect({{ camelCase usecase_name }}Repository.find).toHaveBeenCalledWith(mock{{ pascalCase usecase_name }}.id);
+    expect({{ camelCase usecase_name }}Repository.update).toHaveBeenCalled();
+  });
+
+  it('should throw an exception of type NotFoundException', async () => {
+    const { sut, {{ camelCase usecase_name }}Repository } = makeSut();
+    jest.spyOn({{ camelCase usecase_name }}Repository, 'find').mockReturnValue(Promise.resolve(null));
+
+    const promise = sut.execute(mock{{ pascalCase usecase_name }}.id, mock{{ pascalCase usecase_name }}Update);
+
+    await expect(promise).rejects.toThrow(NotFoundException);
+    expect({{ camelCase usecase_name }}Repository.find).toHaveBeenCalledWith(mock{{ pascalCase usecase_name }}.id);
+    expect({{ camelCase usecase_name }}Repository.update).not.toHaveBeenCalled();
+  });
+});

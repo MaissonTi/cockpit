@@ -1,0 +1,11 @@
+import { {{ pascalCase usecase_name }}Model } from '@/domain/models/{{ kebabCase usecase_name }}.model';
+
+export const mock{{ pascalCase usecase_name }} = {
+  id: 'any_id',
+  name: 'any_name',
+} as {{ pascalCase usecase_name }}Model;
+
+export const mock{{ pascalCase usecase_name }}Update = {
+  ...mock{{ pascalCase usecase_name }},
+  name: 'New Name',
+} as {{ pascalCase usecase_name }}Model;

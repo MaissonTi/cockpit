@@ -8,67 +8,102 @@ export class TimerService {
   constructor(private readonly schedulerRegistry: SchedulerRegistry) {}
 
   startTimer(
-    group: string,
+    key: string,
     duration: number,
     onUpdate: (remainingTime: number) => void,
     onFinish: () => void,
   ): void {
-    if (this.timers.has(group)) {
-      throw new Error('Cronômetro já está ativo.');
-    }
+    // if (this.timers.has(key)) {
+    //   throw new Error('Cronômetro já está ativo.');
+    // }
 
     let remainingTime = duration;
 
     const interval = setInterval(() => {
       if (remainingTime <= 0) {
         clearInterval(interval);
-        this.schedulerRegistry.deleteInterval(group);
-        this.timers.delete(group);
+        this.schedulerRegistry.deleteInterval(key);
+        this.timers.delete(key);
         onFinish();
       } else {
         remainingTime--;
-        this.timers.set(group, remainingTime);
+        this.timers.set(key, remainingTime);
         onUpdate(remainingTime);
       }
     }, 1000);
 
-    this.schedulerRegistry.addInterval(group, interval);
-    this.timers.set(group, duration);
+    this.schedulerRegistry.addInterval(key, interval);
+    this.timers.set(key, duration);
   }
 
-  pauseTimer(group: string): number {
-    if (!this.timers.has(group)) {
-      throw new Error('Cronômetro não está ativo.');
+  pauseTimer(key: string): number {
+    if (!this.timers.has(key)) {
+      throw new Error('TimerService is not active.');
     }
 
-    this.schedulerRegistry.deleteInterval(group);
-    return this.timers.get(group);
+    this.schedulerRegistry.deleteInterval(key);
+    return this.timers.get(key);
   }
 
   resumeTimer(
-    group: string,
+    key: string,
     onUpdate: (remainingTime: number) => void,
     onFinish: () => void,
   ): void {
-    const remainingTime = this.timers.get(group);
+    const remainingTime = this.timers.get(key);
 
     if (!remainingTime) {
-      throw new Error('Cronômetro não está ativo.');
+      throw new Error('TimerService is not active.');
     }
 
-    this.startTimer(group, remainingTime, onUpdate, onFinish);
+    this.startTimer(key, remainingTime, onUpdate, onFinish);
   }
 
-  stopTimer(group: string): void {
-    if (!this.timers.has(group)) {
-      throw new Error('Cronômetro não está ativo.');
+  stopTimer(key: string): void {
+    if (!this.timers.has(key)) {
+      throw new Error('TimerService is not active.');
     }
 
-    this.schedulerRegistry.deleteInterval(group);
-    this.timers.delete(group);
+    this.schedulerRegistry.deleteInterval(key);
+    this.timers.delete(key);
   }
 
-  getRemainingTime(group: string): number {
-    return this.timers.get(group) || 0;
+  getRemainingTime(key: string): number {
+    return this.timers.get(key) || 0;
+  }
+
+  isTimerActive(key: string): boolean {
+    return this.timers.has(key);
+  }
+
+  addTime(
+    key: string,
+    additionalSeconds: number,
+    onUpdate: (remainingTime: number) => void,
+    onFinish: () => void,
+  ): void {
+    if (!this.timers.has(key)) {
+      throw new Error('TimerService is not active.');
+    }
+
+    const remainingTime = this.timers.get(key) + additionalSeconds;
+    this.timers.set(key, remainingTime);
+
+    this.schedulerRegistry.deleteInterval(key);
+
+    const interval = setInterval(() => {
+      if (remainingTime <= 0) {
+        clearInterval(interval);
+        this.schedulerRegistry.deleteInterval(key);
+        this.timers.delete(key);
+        onFinish();
+      } else {
+        const newRemainingTime = this.timers.get(key) - 1;
+        this.timers.set(key, newRemainingTime);
+        onUpdate(newRemainingTime);
+      }
+    }, 1000);
+
+    this.schedulerRegistry.addInterval(key, interval);
   }
 }

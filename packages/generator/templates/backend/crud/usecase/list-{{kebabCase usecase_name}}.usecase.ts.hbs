@@ -1,0 +1,13 @@
+import { I{{ pascalCase usecase_name }}Repository } from '@/domain/protocols/database/repositories/{{ kebabCase usecase_name }}.repository.interface';
+import { Pagination } from '@/domain/protocols/database/types/pagination.types';
+import { IList{{ pascalCase usecase_name }}UseCase } from '@/domain/usecases/{{ kebabCase usecase_name }}/list-{{ kebabCase usecase_name }}.usecase.interface';
+
+export class List{{ pascalCase usecase_name }}UseCase implements IList{{ pascalCase usecase_name }}UseCase {
+  constructor(private readonly {{ camelCase usecase_name }}Repository: I{{ pascalCase usecase_name }}Repository) {}
+  async execute(
+    filter?: IList{{ pascalCase usecase_name }}UseCase.Input,
+    pagination?: Pagination
+  ): Promise<IList{{ pascalCase usecase_name }}UseCase.Output> {
+    return this.{{ camelCase usecase_name }}Repository.list(filter, pagination);
+  }
+}

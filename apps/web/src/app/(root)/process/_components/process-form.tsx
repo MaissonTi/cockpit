@@ -8,13 +8,13 @@ interface Props {
   params: {
     group: string;
     messages: any;
-    batch: Batch[];
+    batchs: Batch[];
   };
 }
 
-function ProcessForm({ params: { group, messages, batch } }: Props) {
+function ProcessForm({ params: { group, messages, batchs } }: Props) {
   useChat({ group, messages });
-  useBatch({ group, batch });
+  useBatch({ group, batchs });
 
   return (
     <div className="mx-2 grid md:grid-cols-4">

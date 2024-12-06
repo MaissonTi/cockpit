@@ -1,0 +1,14 @@
+import { {{ pascalCase usecase_name }}Model } from '@/domain/models/{{ kebabCase usecase_name }}.model';
+import { Paginated, Pagination } from '@/domain/protocols/database/types/pagination.types';
+
+export namespace IList{{ pascalCase usecase_name }}UseCase {
+  export type Input = Partial<{{ pascalCase usecase_name }}Model>;
+  export type Output = Paginated<{{ pascalCase usecase_name }}Model>;
+}
+
+export interface IList{{ pascalCase usecase_name }}UseCase {
+  execute(
+    filter?: IList{{ pascalCase usecase_name }}UseCase.Input,
+    pagination?: Pagination
+  ): Promise<IList{{ pascalCase usecase_name }}UseCase.Output>;
+}

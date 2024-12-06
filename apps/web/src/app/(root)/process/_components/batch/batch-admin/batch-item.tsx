@@ -1,7 +1,9 @@
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Batch } from '@/services/process.service';
 import { CirclePause, CirclePlay, CircleStop } from 'lucide-react';
+import { useState } from 'react';
 import { useBatch } from '../../../_context/batch-context';
 
 interface Props {
@@ -27,7 +29,11 @@ const formatTime = timeInSeconds => {
 };
 
 function BatchItem({ data }: Props) {
-  const { timerActive, timeRemaining, timerEvent } = useBatch();
+  const { timerActive, timeRemaining, timerEvent, placeBid } = useBatch({
+    currentBatch: data.id,
+  });
+
+  const [currentBid, setCurrentBid] = useState<number>(0);
 
   const handleSubmit = e => {
     e.preventDefault();
@@ -52,6 +58,23 @@ function BatchItem({ data }: Props) {
               : 'Cronômetro pausado'}
           </p>
         </div>
+        <div>
+          <div className="flex w-full max-w-sm items-center space-x-2">
+            <Input
+              type="number"
+              placeholder="Digite seu lance"
+              value={currentBid}
+              onChange={e => setCurrentBid(parseFloat(e.target.value))}
+            />
+            <Button
+              type="button"
+              disabled={!timerActive}
+              onClick={() => placeBid(data.id, currentBid)}
+            >
+              Dar Lance
+            </Button>
+          </div>
+        </div>
         <div className="flex">
           <Button
             onClick={() => timerEvent('startTimer', [data.id])}
@@ -64,6 +87,14 @@ function BatchItem({ data }: Props) {
             onClick={() => timerEvent('pauseTimer', [data.id])}
             variant="outline"
             type="button"
+          >
+            <CirclePause className="h-5 w-5" size={24} />
+          </Button>
+          <Button
+            onClick={() => timerEvent('resumeTimer', [data.id])}
+            variant="outline"
+            type="button"
+            className="bg-red-500"
           >
             <CirclePause className="h-5 w-5" size={24} />
           </Button>
