@@ -17,17 +17,17 @@ export default function (plop: NodePlopAPI) {
 }
 
 function addModuleController({ plop, answers}: PlopType){
-  const modulePathController = path.resolve(ROOT_MONOREPO, "apps/backend/src/presentation/_presentation.module.ts")
+  const modulePathController = path.resolve(ROOT_MONOREPO, "apps/api/src/presentation/_presentation.module.ts")
   injectModule({ plop, answers}, modulePathController, [EnumImport.Controller], [ActionReplace.Controllers] )
 }
 
 function addModuleUserCase({ plop, answers}: PlopType){
-  let pathUrl = "apps/backend/src/app/usecases/_usecases.module.ts"
+  let pathUrl = "apps/api/src/app/usecases/_usecases.module.ts"
   const modulePathUsecases = path.resolve(ROOT_MONOREPO, pathUrl)
   injectModule({ plop, answers}, modulePathUsecases, [EnumImport.Module], [ActionReplace.Imports, ActionReplace.Exports]);
 }
 
 function addModuleRepository({ plop, answers}: PlopType){
-  const modulePathRepo = path.resolve(ROOT_MONOREPO, "apps/backend/src/infra/database/_database.module.ts")
+  const modulePathRepo = path.resolve(ROOT_MONOREPO, "apps/api/src/infra/database/_database.module.ts")
   injectModule({ plop, answers}, modulePathRepo, [EnumImport.Repository], [ActionReplace.ProvidersRepo, ActionReplace.ExportsRepo]);
 }

@@ -1,7 +1,8 @@
 {
-  "name": "@common/generator",
+  "name": "@repo/generator",
   "version": "1.0.0",
   "main": "index.js",
+  "private": true,
   "scripts": {
     "gen": "cross-env NODE_OPTIONS=\"--import tsx\" plop --plopfile=plopfile.ts"
   },

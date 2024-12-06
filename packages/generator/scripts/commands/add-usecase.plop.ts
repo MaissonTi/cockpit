@@ -26,24 +26,24 @@ export default function (plop: NodePlopAPI) {
 }
 
 function addModuleUserCase({ plop, answers}: PlopType){
-  let pathUrl = "apps/backend/src/app/usecases/_usecases.module.ts"
+  let pathUrl = "apps/api/src/app/usecases/_usecases.module.ts"
   const modulePathUsecases = path.resolve(ROOT_MONOREPO, pathUrl)
   injectModule({ plop, answers}, modulePathUsecases, [EnumImport.Module], [ActionReplace.Imports, ActionReplace.Exports]);
 }
 
 function addModuleController({ plop, answers}: PlopType){
-  const modulePathController = path.resolve(ROOT_MONOREPO, "apps/backend/src/presentation/_presentation.module.ts")
+  const modulePathController = path.resolve(ROOT_MONOREPO, "apps/api/src/presentation/_presentation.module.ts")
   injectModule({ plop, answers}, modulePathController, [EnumImport.Controller], [ActionReplace.Controllers] )
 }
 
 function addUseCaseInController({ plop, answers}: PlopType){
-  let pathUrl = `apps/backend/src/presentation/http/controllers/${answers.selected_module}.controller.ts`
+  let pathUrl = `apps/api/src/presentation/http/controllers/${answers.selected_module}.controller.ts`
   const modulePathUsecases = path.resolve(ROOT_MONOREPO, pathUrl)
   injectModule({ plop, answers}, modulePathUsecases, [EnumImport.UseCaseFolder, EnumImport.UseCaseInterfaceFolder, EnumImport.Dtos], [ActionReplace.ControllersAddConstructor, ActionReplace.ControllersAdd]);
 }
 
 function addUseCaseInModule({ plop, answers}: PlopType){
-  let pathUrl = `apps/backend/src/app/usecases/${answers.selected_module}/_${answers.selected_module}.module.ts`
+  let pathUrl = `apps/api/src/app/usecases/${answers.selected_module}/_${answers.selected_module}.module.ts`
   const modulePathUsecases = path.resolve(ROOT_MONOREPO, pathUrl)
   if(answers.is_connection_repository){
     return injectModule({ plop, answers}, modulePathUsecases, [EnumImport.UseCase], [ActionReplace.ProvidersRepoFactory, ActionReplace.ExportsFactory]);

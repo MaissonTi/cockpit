@@ -7,7 +7,7 @@ const ROOT_MONOREPO = path.resolve("..", "..");
 export default function (plop: NodePlopAPI) {
 
 	plop.setGenerator('Create UseCase', {
-		description: 'Create a new UseCase package inside `./backend` folder',
+		description: 'Create a new UseCase package inside `./api` folder',
 		prompts: [
       {
         type: "input",
@@ -32,7 +32,7 @@ export default function (plop: NodePlopAPI) {
         message: 'Selecione uma pasta de módulo:',
         when: (answers) => answers.is_connection_module,
         choices: () => {
-          const directoryPath = path.resolve(ROOT_MONOREPO, 'apps/backend/src/app/usecases');
+          const directoryPath = path.resolve(ROOT_MONOREPO, 'apps/api/src/app/usecases');
           return fs.readdirSync(directoryPath).filter((file) => {
             return fs.statSync(path.join(directoryPath, file)).isDirectory();
           });
@@ -82,23 +82,23 @@ export default function (plop: NodePlopAPI) {
 
       actions.push({
         type: "add",
-        path: path.resolve(ROOT_MONOREPO, "apps/backend/src/app/usecases", "{{ kebabCase (or selected_module usecase_name) }}", "{{kebabCase usecase_name}}.usecase.ts"),
-        templateFile: "templates/backend/usecase-only/usecase.ts.hbs",
+        path: path.resolve(ROOT_MONOREPO, "apps/api/src/app/usecases", "{{ kebabCase (or selected_module usecase_name) }}", "{{kebabCase usecase_name}}.usecase.ts"),
+        templateFile: "templates/api/usecase-only/usecase.ts.hbs",
         skipIfExists: true,
       })
 
       actions.push({
         type: "add",
-        path: path.resolve(ROOT_MONOREPO, "apps/backend/src/domain/usecases", "{{ kebabCase (or selected_module usecase_name) }}", "{{kebabCase usecase_name}}.usecase.interface.ts"),
-        templateFile: "templates/backend/usecase-only/usecase.interface.ts.hbs",
+        path: path.resolve(ROOT_MONOREPO, "apps/api/src/domain/usecases", "{{ kebabCase (or selected_module usecase_name) }}", "{{kebabCase usecase_name}}.usecase.interface.ts"),
+        templateFile: "templates/api/usecase-only/usecase.interface.ts.hbs",
         skipIfExists: true,
       })
 
       if(!(data?.is_connection_module)){
         actions.push({
           type: "add",
-          path: path.resolve(ROOT_MONOREPO, "apps/backend/src/app/usecases", "{{ kebabCase (or selected_module usecase_name) }}", "_{{kebabCase usecase_name}}.module.ts"),
-          templateFile: "templates/backend/usecase-only/usecase.module.ts.hbs",
+          path: path.resolve(ROOT_MONOREPO, "apps/api/src/app/usecases", "{{ kebabCase (or selected_module usecase_name) }}", "_{{kebabCase usecase_name}}.module.ts"),
+          templateFile: "templates/api/usecase-only/usecase.module.ts.hbs",
           skipIfExists: true,
         })
       }
@@ -106,15 +106,15 @@ export default function (plop: NodePlopAPI) {
       if(data?.create_controller){
         actions.push({
           type: "add",
-          path: path.resolve(ROOT_MONOREPO, "apps/backend/src/presentation/http/controllers", "{{kebabCase usecase_name}}.controller.ts"),
-          templateFile: "templates/backend/usecase-only/usecase.controller.ts.hbs",
+          path: path.resolve(ROOT_MONOREPO, "apps/api/src/presentation/http/controllers", "{{kebabCase usecase_name}}.controller.ts"),
+          templateFile: "templates/api/usecase-only/usecase.controller.ts.hbs",
           skipIfExists: true,
         })
 
         actions.push({
           type: "add",
-          path: path.resolve(ROOT_MONOREPO, "apps/backend/src/presentation/http/dtos", "{{kebabCase usecase_name}}.dto.ts"),
-          templateFile: "templates/backend/usecase-only/usecase.dto.ts.hbs",
+          path: path.resolve(ROOT_MONOREPO, "apps/api/src/presentation/http/dtos", "{{kebabCase usecase_name}}.dto.ts"),
+          templateFile: "templates/api/usecase-only/usecase.dto.ts.hbs",
           skipIfExists: true,
         })
       }
