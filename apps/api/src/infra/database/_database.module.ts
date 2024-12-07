@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { BatchBidsRepository } from './prisma/repositories/batch-bids.repository';
 import { BatchRepository } from './prisma/repositories/batch.repository';
 import { ProcessDisputeRepository } from './prisma/repositories/process-dispute.repository';
 
@@ -14,12 +15,14 @@ import { UserRepository } from './prisma/repositories/user.repositories';
     ProcessDisputeRepository.toFactory(),
     UserMessageRepository.toFactory(),
     BatchRepository.toFactory(),
+    BatchBidsRepository.toFactory(),
   ],
   exports: [
     UserRepository.name,
     ProcessDisputeRepository.name,
     UserMessageRepository.name,
     BatchRepository.name,
+    BatchBidsRepository.name,
   ],
 })
 export class DatabaseModule {}

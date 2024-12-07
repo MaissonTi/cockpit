@@ -1,11 +1,11 @@
+import { ProcessDisputeModel } from '@/domain/models/process-dispute.model';
 import { IProcessDisputeRepository } from '@/domain/protocols/database/repositories/process-dispute.repository.interface';
 import {
   Paginated,
   Pagination,
 } from '@/domain/protocols/database/types/pagination.types';
-import { PrismaService } from '../prisma.service';
-import { ProcessDisputeModel } from '@/domain/models/process-dispute.model';
 import { ProcessDisputeMapper } from '../mapper/process-dispute.mapper';
+import { PrismaService } from '../prisma.service';
 import { Repositories } from './_repositories.abstract';
 
 export class ProcessDisputeRepository
@@ -20,10 +20,15 @@ export class ProcessDisputeRepository
     const result = await this.prisma.processDispute.findFirst({
       where: { id },
       include: {
-        batch: true,
+        batch: {
+          include: {
+            batchBids: true,
+          },
+        },
         processDisputeUsers: true,
       },
     });
+
     return ProcessDisputeMapper.toModel(result);
   }
 
@@ -70,7 +75,11 @@ export class ProcessDisputeRepository
         ...this.pageSkipTake(pagination),
         orderBy: { createdAt: 'desc' },
         include: {
-          batch: true,
+          batch: {
+            include: {
+              batchBids: true,
+            },
+          },
           processDisputeUsers: true,
         },
       }),

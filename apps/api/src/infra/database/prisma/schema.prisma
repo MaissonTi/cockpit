@@ -83,23 +83,22 @@ model Batch {
   updatedAt DateTime? @updatedAt @map("updated_at")
 
   processDispute ProcessDispute @relation("relation_batch_process_dispute", fields: [processDisputeId], references: [id], onDelete: Cascade, map: "process_disputes_id_key")
-  batchThrow     BatchThrow[]   @relation("relation_batch_throw")
+  batchBids      BatchBids[]    @relation("relation_batchs_bids")
 
   @@map("batch")
 }
 
-model BatchThrow {
-  id      String  @id @default(uuid())
-  name    String
-  status  String  @default("PENDING")
-  batchId String  @map("batch_id")
-  userId  String? @map("user_id")
-  value   Float?  @default(0.0)
+model BatchBids {
+  id        String   @id @default(uuid())
+  batchId   String   @map("batch_id")
+  userId    String?  @map("user_id")
+  value     Float?   @default(0.0)
+  isDecline Boolean? @default(false) @map("is_decline")
 
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime? @updatedAt @map("updated_at")
 
-  Batch Batch @relation("relation_batch_throw", fields: [batchId], references: [id], onDelete: Cascade, map: "batch_id_key")
+  batch Batch @relation("relation_batchs_bids", fields: [batchId], references: [id], onDelete: Cascade, map: "batch_bids_id_key")
 
-  @@map("batch_throw")
+  @@map("batch_bids")
 }
