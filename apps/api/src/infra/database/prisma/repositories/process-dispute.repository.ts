@@ -63,7 +63,7 @@ export class ProcessDisputeRepository
   }
 
   async list(
-    where: Partial<ProcessDisputeModel>,
+    where: Omit<Partial<ProcessDisputeModel>, 'batch'>,
     pagination?: Pagination,
   ): Promise<Paginated<ProcessDisputeModel>> {
     const [total, data] = await this.prisma.$transaction([
@@ -80,6 +80,7 @@ export class ProcessDisputeRepository
               batchBids: true,
             },
           },
+          usersMessagens: true,
           processDisputeUsers: true,
         },
       }),

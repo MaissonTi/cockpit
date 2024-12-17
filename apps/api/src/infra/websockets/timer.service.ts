@@ -79,15 +79,17 @@ export class TimerService {
   addTime(
     key: string,
     additionalSeconds: number,
-    onUpdate: (remainingTime: number) => void,
+    onUpdate: (remainingTime: number, moreTime?: boolean) => void,
     onFinish: () => void,
   ): void {
     if (!this.timers.has(key)) {
       throw new Error('TimerService is not active.');
     }
 
-    const remainingTime = this.timers.get(key) + additionalSeconds;
+    let remainingTime = this.timers.get(key) + additionalSeconds;
     this.timers.set(key, remainingTime);
+
+    onUpdate(remainingTime, true);
 
     this.schedulerRegistry.deleteInterval(key);
 
@@ -98,9 +100,9 @@ export class TimerService {
         this.timers.delete(key);
         onFinish();
       } else {
-        const newRemainingTime = this.timers.get(key) - 1;
-        this.timers.set(key, newRemainingTime);
-        onUpdate(newRemainingTime);
+        remainingTime--;
+        this.timers.set(key, remainingTime);
+        onUpdate(remainingTime, false);
       }
     }, 1000);
 

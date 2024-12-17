@@ -12,7 +12,7 @@ type BatchContextProps = {
   setGroup: (group: string) => void;
   session: User | null;
   notification: string | null;
-  winner: Bid | null;
+  //winner: Bid | null;
   timerEvent: (event: EventTimer, batchs: string[]) => void;
   batchs: Batch[];
   setBatchs: (batch: Batch[]) => void;
@@ -24,6 +24,7 @@ type BatchContextProps = {
 type BatchTimer = {
   timerActive: boolean;
   timeRemaining: number;
+  timeUpdate: boolean;
 };
 
 type UseBatchProps = BatchTimer & { birds: any[] } & Omit<
@@ -31,17 +32,17 @@ type UseBatchProps = BatchTimer & { birds: any[] } & Omit<
     'setGroup' | 'setBatchs' | 'setCurrentBatch' | 'batchMap' | 'bidsMap'
   >;
 
-const BatchContext = createContext<BatchContextProps | undefined>(undefined);
-
-interface Bid {
-  user: string;
-  amount: number;
-}
+// type Bid = {
+//   user: string;
+//   amount: number;
+// };
 
 type Batchbids = {
   user: string;
-  amount: number;
+  amount: string;
 };
+
+const BatchContext = createContext<BatchContextProps | undefined>(undefined);
 
 const BatchProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [batchMap, setBatchMap] = useState<Map<string, BatchTimer>>(new Map());
@@ -53,16 +54,20 @@ const BatchProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [batchs, setBatchs] = useState<Batch[]>([]);
 
   const [notification, setNotification] = useState<string | null>(null);
-  const [winner, setWinner] = useState<Bid | null>(null);
+  //const [winner, setWinner] = useState<Bid | null>(null);
 
   React.useEffect(() => {
     if (!socket || !group || !session) return;
 
-    socket.on('timerUpdate', ({ timerActive, timeRemaining, batch }) => {
-      setBatchMap(
-        map => new Map(map.set(batch, { timerActive, timeRemaining })),
-      );
-    });
+    socket.on(
+      'timerUpdate',
+      ({ timerActive, timeRemaining, batch, timeUpdate }) => {
+        setBatchMap(
+          map =>
+            new Map(map.set(batch, { timeUpdate, timerActive, timeRemaining })),
+        );
+      },
+    );
 
     socket.on('bidsUpdate', ({ amount, batch, user }) => {
       if (!batch) return;
@@ -71,7 +76,18 @@ const BatchProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
 
       setBidsMap(map => {
         const existingBids = map.get(batch) || [];
-        return new Map(map.set(batch, [...existingBids, { amount, user }]));
+        return new Map(
+          map.set(batch, [
+            ...existingBids,
+            {
+              amount: Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL',
+              }).format(amount),
+              user,
+            },
+          ]),
+        );
       });
     });
 
@@ -84,9 +100,9 @@ const BatchProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
       }, 5000);
     });
 
-    socket.on('winnerAnnounced', (highestBid: Bid) => {
-      setWinner(highestBid);
-    });
+    // socket.on('winnerAnnounced', (highestBid: Bid) => {
+    //   setWinner(highestBid);
+    // });
 
     return () => {
       socket.off('timerUpdate');
@@ -118,7 +134,7 @@ const BatchProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         timerEvent,
         notification,
         batchMap,
-        winner,
+        //winner,
         batchs,
         setBatchs,
         placeBid,
@@ -147,7 +163,7 @@ export const useBatch = (options?: Options): UseBatchProps => {
     notification,
     batchMap,
     timerEvent,
-    winner,
+    //winner,
     batchs,
     setBatchs,
     placeBid,
@@ -155,6 +171,7 @@ export const useBatch = (options?: Options): UseBatchProps => {
   } = context;
 
   const [timerActive, setTimerActive] = useState(false);
+  const [timeUpdate, settimeUpdate] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [currentBatch, setCurrentBatch] = useState<string | null>(null);
   const [birds, setBirds] = useState<any[]>([]);
@@ -180,6 +197,7 @@ export const useBatch = (options?: Options): UseBatchProps => {
 
     setTimerActive(timerData.timerActive);
     setTimeRemaining(timerData.timeRemaining);
+    settimeUpdate(timerData.timeUpdate);
   }, [currentBatch, batchMap]);
 
   React.useEffect(() => {
@@ -188,7 +206,10 @@ export const useBatch = (options?: Options): UseBatchProps => {
     const array = Array.from(bidsMap.entries()).map(([batch, bids]) => {
       return {
         batch,
-        birds: bids.map(({ user, amount }) => ({ user, amount })),
+        birds: bids.map(({ user, amount }) => ({
+          user,
+          amount,
+        })),
       };
     });
 
@@ -202,10 +223,11 @@ export const useBatch = (options?: Options): UseBatchProps => {
     timerActive,
     timeRemaining,
     timerEvent,
-    winner,
+    //winner,
     batchs,
     placeBid,
     birds,
+    timeUpdate,
   };
 };
 

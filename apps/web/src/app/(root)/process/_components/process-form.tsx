@@ -7,7 +7,7 @@ import Chat from './chat/chat';
 interface Props {
   params: {
     group: string;
-    messages: any;
+    messages: any[];
     batchs: Batch[];
   };
 }

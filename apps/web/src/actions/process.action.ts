@@ -1,8 +1,10 @@
 'use server';
 
-import ProcessService, { Batch } from '@/services/process.service';
+import ProcessService, { Process } from '@/services/process.service';
 
-export default async function getProcess(group: string): Promise<Batch[]> {
+export default async function getProcess(
+  group: string,
+): Promise<Process | null> {
   const { data } = await ProcessService.list(
     {
       currentPage: 1,
@@ -14,5 +16,5 @@ export default async function getProcess(group: string): Promise<Batch[]> {
     { cache: 'no-cache' },
   );
 
-  return data[0]?.batch || [];
+  return data[0] || null;
 }

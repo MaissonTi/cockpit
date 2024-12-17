@@ -1,5 +1,5 @@
 import getProcess from '@/actions/process.action';
-import getMessages from '@/actions/user-message.action';
+import { redirect } from 'next/navigation';
 import ProcessForm from '../_components/process-form';
 
 interface PageProps {
@@ -13,14 +13,23 @@ export default async function ProcessDisputPage({ params }: PageProps) {
     return <div>...</div>;
   }
 
-  const { data: messages } = await getMessages(params.uuid);
-  const batchs = await getProcess(params.uuid);
+  const process = await getProcess(params.uuid);
 
-  return (
-    <div className="space-y-4 py-4">
-      <main className="space-y-4">
-        <ProcessForm params={{ group: params.uuid, messages, batchs }} />
-      </main>
-    </div>
-  );
+  if (process) {
+    return (
+      <div className="space-y-4 py-4">
+        <main className="space-y-4">
+          <ProcessForm
+            params={{
+              group: params.uuid,
+              messages: process.usersMessagens,
+              batchs: process.batch,
+            }}
+          />
+        </main>
+      </div>
+    );
+  }
+
+  redirect('/process');
 }

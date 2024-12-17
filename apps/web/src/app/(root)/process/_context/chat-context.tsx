@@ -1,6 +1,6 @@
 'use client';
 import UserMessageService from '@/services/user-message.service';
-import { UserMessageResponseDTO as Message } from '@repo/domain/dtos/user-message.dto';
+import { UserMessageResponseDTO } from '@repo/domain/dtos/user-message.dto';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -9,15 +9,20 @@ import { useSession } from 'next-auth/react';
 import React, { createContext, ReactNode, useContext, useState } from 'react';
 import { useSocket } from './socket-context';
 
-interface Options {
+type Message = UserMessageResponseDTO & {
+  isSender: boolean;
+  timestamp: string;
+};
+
+type Options = {
   group?: string;
   messages?: Message[];
-}
+};
 
 type ChatContextProps = {
   group?: string;
   setGroup: (group: string) => void;
-  setMessages: (message: Message[]) => void; 
+  setMessages: (message: Message[]) => void;
   session: User | null;
   messages: Message[];
   sendMessage: (content: string) => void;
@@ -47,7 +52,16 @@ const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
 
   React.useEffect(() => {
     if (result) {
-      setMessages(result.data);
+      const messageNew = result.data.map(item => {
+        return {
+          ...item,
+          timestamp: format(new Date(item.createdAt), 'HH:mm', {
+            locale: ptBR,
+          }),
+          isSender: item.userId === session?.id,
+        };
+      });
+      setMessages(messageNew);
     }
   }, [result]);
 
@@ -59,8 +73,8 @@ const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
       user: session.name,
     });
 
-    socket.on('message', (message) => {
-      setMessages((prev) => {
+    socket.on('message', message => {
+      setMessages(prev => {
         return [...prev, message];
       });
     });
@@ -73,7 +87,7 @@ const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const sendMessage = (content: string) => {
     if (!socket && !group && !session) return;
 
-    const newMessage: Omit<Message, 'createdAt'> = {
+    const newMessage: Omit<Message, 'createdAt' | 'isSender'> = {
       id: String(Date.now()),
       content: content,
       username: session?.name!,
@@ -106,9 +120,19 @@ export const useChat = (options?: Options): UseChatProps => {
       setGroup(options?.group);
     }
     if (options?.messages) {
-      setMessages(options?.messages);
+      const messageNew = options?.messages.map(item => {
+        return {
+          ...item,
+          timestamp: format(new Date(item.createdAt), 'HH:mm', {
+            locale: ptBR,
+          }),
+          isSender: item.userId === session?.id,
+        };
+      });
+
+      setMessages(messageNew);
     }
-  }, []);
+  }, [session?.id]);
 
   return { session, messages, sendMessage, group };
 };

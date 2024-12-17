@@ -1,4 +1,5 @@
 import { api, Options } from '@/lib/http-service';
+import { UserMessageResponseDTO as Message } from '@repo/domain/dtos/user-message.dto';
 
 type UpdateProcess = {
   id?: string;
@@ -15,6 +16,7 @@ export interface Process {
   createdAt: string;
   updatedAt: string;
   batch: Batch[];
+  usersMessagens: Message[];
 }
 
 export interface Batch {

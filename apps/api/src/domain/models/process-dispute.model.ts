@@ -1,3 +1,5 @@
+import { BatchModel } from './batch.model';
+
 export type ProcessDisputeModel = {
   id: string;
   name: string;
@@ -6,4 +8,5 @@ export type ProcessDisputeModel = {
   adminId?: string;
   createdAt?: Date;
   updatedAt?: Date;
+  batch?: BatchModel[];
 };

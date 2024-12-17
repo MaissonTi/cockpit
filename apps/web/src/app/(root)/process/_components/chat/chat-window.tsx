@@ -4,9 +4,15 @@ import useChatScroll from '../../_hooks/useChatScroll';
 import ChatMessage from './chat-message';
 
 const ChatWindow: React.FC = () => {
-  const { session, messages } = useChat();
+  const { messages } = useChat();
 
-  const { containerRef, isAtBottom, unreadMessages, scrollToBottom, handleScroll } = useChatScroll({
+  const {
+    containerRef,
+    isAtBottom,
+    unreadMessages,
+    scrollToBottom,
+    handleScroll,
+  } = useChatScroll({
     dependencies: [messages],
   });
 
@@ -23,7 +29,7 @@ const ChatWindow: React.FC = () => {
               key={item.id}
               content={item.content}
               sender={item.username}
-              isSender={item.userId === session?.id}
+              isSender={item.isSender}
               timestamp={item.timestamp}
             />
           ))}
@@ -35,7 +41,9 @@ const ChatWindow: React.FC = () => {
           className="fixed bottom-4 right-4 flex items-center space-x-2 px-4 py-2 bg-blue-500 text-white rounded-full shadow-lg hover:bg-blue-600"
         >
           <span>Novas mensagens</span>
-          <span className="bg-red-500 text-white rounded-full px-2 py-1 text-xs">{unreadMessages}</span>
+          <span className="bg-red-500 text-white rounded-full px-2 py-1 text-xs">
+            {unreadMessages}
+          </span>
         </button>
       )}
     </div>

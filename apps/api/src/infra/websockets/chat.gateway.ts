@@ -1,4 +1,5 @@
 // src/chat.gateway.ts
+import { IProcessDisputeRepository } from '@/domain/protocols/database/repositories/process-dispute.repository.interface';
 import { IUserMessageRepository } from '@/domain/protocols/database/repositories/user-message.repository.interface';
 import { Inject } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -14,6 +15,7 @@ import {
 } from '@nestjs/websockets';
 import { UserMessageModel } from '@repo/domain/models/user-message.model';
 import { Server, Socket } from 'socket.io';
+import { ProcessDisputeRepository } from '../database/prisma/repositories/process-dispute.repository';
 import { UserMessageRepository } from '../database/prisma/repositories/user-message.repositories';
 import { EnvService } from '../env/env.service';
 import { TimerService } from './timer.service';
@@ -36,6 +38,9 @@ interface GroupState {
   users: number; // Contador de usuários
 }
 
+const DEFAULT_TIME = 15; // 1 minuto
+const MORE_TIME = 15; // 1 minuto
+
 @WebSocketGateway({
   cors: {
     origin: '*', // Permite todas as origens, ajuste conforme necessário
@@ -47,6 +52,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @Inject(UserMessageRepository.name)
   private readonly userMessageRepository: IUserMessageRepository;
+
+  @Inject(ProcessDisputeRepository.name)
+  private readonly processDisputeRepository: IProcessDisputeRepository;
 
   constructor(
     private jwtService: JwtService,
@@ -124,10 +132,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('joinGroup')
-  handleJoinGroup(
+  async handleJoinGroup(
     @MessageBody() { group, user }: { group: string; user: string },
     @ConnectedSocket() client: Socket,
-  ): void {
+  ): Promise<void> {
     const rooms = Array.from(client.rooms);
     for (const room of rooms) {
       if (room !== client.id) {
@@ -137,12 +145,19 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     client.join(group);
 
-    if (this.timerService.isTimerActive(group)) {
-      const remainingTime = this.timerService.getRemainingTime(group);
+    const { batch } = await this.processDisputeRepository.find(group);
 
-      this.server.to(group).emit('timerUpdate', {
-        timerActive: true,
-        timeRemaining: remainingTime,
+    if (batch.length > 0) {
+      batch.map(batch => {
+        if (this.timerService.isTimerActive(batch.id)) {
+          const remainingTime = this.timerService.getRemainingTime(batch.id);
+
+          this.server.to(group).emit('timerUpdate', {
+            timerActive: true,
+            timeRemaining: remainingTime,
+            batch: batch.id,
+          });
+        }
       });
     }
 
@@ -162,14 +177,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     this.server.to(group).emit('userCountUpdate', this.groups[group].users);
 
-    client.emit('groupJoined', {
+    this.server.to(group).emit('groupJoined', {
       group,
       admin: this.groups[group].admin,
       timerActive: this.groups[group].timerActive,
       timeRemaining: this.groups[group].timeRemaining,
     });
 
-    client.emit('bidsUpdate', this.groups[group].bids);
+    this.server.to(group).emit('bidsUpdate', this.groups[group].bids);
   }
 
   @SubscribeMessage('bid')
@@ -195,6 +210,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     // Adiciona o lance ao grupo
     this.groups[group].bids.push({ user, amount });
+
+    if (this.timerService.getRemainingTime(batch) <= 10) {
+      this.handleAddTimeToTimer(
+        { group, additionalSeconds: MORE_TIME, batch },
+        client,
+      );
+    }
 
     this.server.to(group).emit('bidsUpdate', { amount, batch, user });
   }
@@ -251,18 +273,20 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       batchs.map(batch => {
         this.server.to(group).emit('timerUpdate', {
           timerActive: true,
-          timeRemaining: 60,
+          timeRemaining: DEFAULT_TIME,
           batch,
+          timeUpdate: false,
         });
 
         this.timerService.startTimer(
           batch,
-          60, // 2 minutos
+          DEFAULT_TIME,
           remainingTime => {
             this.server.to(group).emit('timerUpdate', {
               timerActive: true,
               timeRemaining: remainingTime,
               batch,
+              timeUpdate: false,
             });
           },
           () => {
@@ -270,6 +294,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
               timerActive: false,
               timeRemaining: 0,
               batch,
+              timeUpdate: false,
             });
             this.server.to(group).emit('timerFinished', { group, batch });
           },
@@ -293,12 +318,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return;
     }
 
-    if (this.timerService.isTimerActive(group)) {
-      const remainingTime = this.timerService.pauseTimer(group);
+    if (this.timerService.isTimerActive(batch)) {
+      const remainingTime = this.timerService.pauseTimer(batch);
       this.server.to(group).emit('timerUpdate', {
         timerActive: false,
         timeRemaining: remainingTime,
         batch,
+        timeUpdate: false,
       });
 
       // this.server
@@ -325,12 +351,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     this.timerService.resumeTimer(
-      group,
+      batch,
       remainingTime => {
         this.server.to(group).emit('timerUpdate', {
           timerActive: true,
           timeRemaining: remainingTime,
           batch,
+          timeUpdate: false,
         });
       },
       () => {
@@ -344,7 +371,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('stopTimer')
   handleStopTimer(
-    @MessageBody() { group, batch }: { group: string; batch: string },
+    @MessageBody() { group, batchs }: { group: string; batchs: string[] },
     @ConnectedSocket() client: Socket,
   ): void {
     const user = client.data.user;
@@ -353,40 +380,53 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return;
     }
 
-    this.timerService.stopTimer(group);
-    this.server
-      .to(group)
-      .emit('timerUpdate', { timerActive: false, timeRemaining: 0, batch });
+    batchs.map(batch => {
+      this.timerService.stopTimer(batch);
+
+      this.server
+        .to(group)
+        .emit('timerUpdate', { timerActive: false, timeRemaining: 0, batch });
+    });
   }
 
   @SubscribeMessage('addTimeToTimer')
   handleAddTimeToTimer(
     @MessageBody()
-    { group, additionalSeconds }: { group: string; additionalSeconds: number },
+    {
+      group,
+      additionalSeconds,
+      batch,
+    }: { group: string; additionalSeconds: number; batch: string },
     @ConnectedSocket() client: Socket,
   ): void {
     const user = client.data.user;
-    console.log('ENTROU no addTimeToTimer, user:', user);
+
     try {
       this.timerService.addTime(
-        group,
+        batch,
         additionalSeconds,
-        remainingTime => {
+        (remainingTime, timeUpdate) => {
           this.server.to(group).emit('timerUpdate', {
             timerActive: true,
             timeRemaining: remainingTime,
+            batch,
+            timeUpdate,
           });
         },
         () => {
-          this.server
-            .to(group)
-            .emit('timerUpdate', { timerActive: false, timeRemaining: 0 });
+          this.server.to(group).emit('timerUpdate', {
+            timerActive: false,
+            timeRemaining: 0,
+            batch,
+          });
           this.server.to(group).emit('timerFinished', group);
         },
       );
 
       // Notifica o grupo que o tempo foi adicionado
-      this.server.to(group).emit('timeAdded', { additionalSeconds });
+      this.server
+        .to(group)
+        .emit('timeAdded', { additionalSeconds, batch, group });
     } catch (error) {
       console.log(error);
       //client.emit('error', error.message);
