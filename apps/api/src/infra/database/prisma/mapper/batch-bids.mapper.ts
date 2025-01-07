@@ -8,6 +8,7 @@ export class BatchBidsMapper {
       userId: data.userId,
       value: data.value,
       isDecline: data.isDecline,
+      reason: data.reason,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
       batchId: data.batchId,
@@ -21,6 +22,7 @@ export class BatchBidsMapper {
       userId: data.userId,
       value: data.value,
       isDecline: data.isDecline,
+      reason: data.reason,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
     };

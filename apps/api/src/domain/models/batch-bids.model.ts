@@ -4,6 +4,7 @@ export type BatchBidsModel = {
   userId: string;
   value: number;
   isDecline?: boolean;
+  reason?: string;
   createdAt?: Date;
   updatedAt?: Date;
   batch?: unknown;

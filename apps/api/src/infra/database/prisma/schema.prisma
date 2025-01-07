@@ -94,6 +94,7 @@ model BatchBids {
   userId    String?  @map("user_id")
   value     Float?   @default(0.0)
   isDecline Boolean? @default(false) @map("is_decline")
+  reason    String?  @map("reason")
 
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime? @updatedAt @map("updated_at")

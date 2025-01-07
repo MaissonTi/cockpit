@@ -6,6 +6,8 @@ import ChatMessage from './chat-message';
 const ChatWindow: React.FC = () => {
   const { messages } = useChat();
 
+  console.log(messages);
+
   const {
     containerRef,
     isAtBottom,

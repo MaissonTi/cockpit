@@ -70,6 +70,7 @@ CREATE TABLE "batch_bids" (
     "user_id" TEXT,
     "value" DOUBLE PRECISION DEFAULT 0.0,
     "is_decline" BOOLEAN DEFAULT false,
+    "reason" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3),
 

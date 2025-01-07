@@ -19,6 +19,7 @@ type BatchContextProps = {
   batchMap: Map<string, BatchTimer>;
   placeBid: (batch: string, amount: number) => void;
   bidsMap: Map<string, Batchbids[]>;
+  decline: (bids: string[], reason: string) => void;
 };
 
 type BatchTimer = {
@@ -38,8 +39,11 @@ type UseBatchProps = BatchTimer & { birds: any[] } & Omit<
 // };
 
 type Batchbids = {
+  id?: string;
   user: string;
   amount: string;
+  reason?: string;
+  isDecline?: boolean;
 };
 
 const BatchContext = createContext<BatchContextProps | undefined>(undefined);
@@ -104,6 +108,10 @@ const BatchProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     //   setWinner(highestBid);
     // });
 
+    socket.on('decline', ({ bids }) => {
+      console.log('decline deu bom', bids);
+    });
+
     return () => {
       socket.off('timerUpdate');
     };
@@ -125,6 +133,16 @@ const BatchProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     });
   };
 
+  const decline = (bids: string[], reason: string) => {
+    if (!socket && !group && !session) return;
+
+    socket!.emit('decline', {
+      bids,
+      reason,
+      group,
+    });
+  };
+
   return (
     <BatchContext.Provider
       value={{
@@ -139,6 +157,7 @@ const BatchProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
         setBatchs,
         placeBid,
         bidsMap,
+        decline,
       }}
     >
       {children}
@@ -168,6 +187,7 @@ export const useBatch = (options?: Options): UseBatchProps => {
     setBatchs,
     placeBid,
     bidsMap,
+    decline,
   } = context;
 
   const [timerActive, setTimerActive] = useState(false);
@@ -228,6 +248,7 @@ export const useBatch = (options?: Options): UseBatchProps => {
     placeBid,
     birds,
     timeUpdate,
+    decline,
   };
 };
 

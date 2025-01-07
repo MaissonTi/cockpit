@@ -1,4 +1,5 @@
 // src/chat.gateway.ts
+import { IBatchBidsRepository } from '@/domain/protocols/database/repositories/batch-bids.repository.interface';
 import { IProcessDisputeRepository } from '@/domain/protocols/database/repositories/process-dispute.repository.interface';
 import { IUserMessageRepository } from '@/domain/protocols/database/repositories/user-message.repository.interface';
 import { Inject } from '@nestjs/common';
@@ -15,6 +16,7 @@ import {
 } from '@nestjs/websockets';
 import { UserMessageModel } from '@repo/domain/models/user-message.model';
 import { Server, Socket } from 'socket.io';
+import { BatchBidsRepository } from '../database/prisma/repositories/batch-bids.repository';
 import { ProcessDisputeRepository } from '../database/prisma/repositories/process-dispute.repository';
 import { UserMessageRepository } from '../database/prisma/repositories/user-message.repositories';
 import { EnvService } from '../env/env.service';
@@ -55,6 +57,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @Inject(ProcessDisputeRepository.name)
   private readonly processDisputeRepository: IProcessDisputeRepository;
+
+  @Inject(BatchBidsRepository.name)
+  private readonly batchBidsRepository: IBatchBidsRepository;
 
   constructor(
     private jwtService: JwtService,
@@ -188,10 +193,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('bid')
-  handleBid(
+  async handleBid(
     @MessageBody() bid: { group: string; batch: string; amount: number },
     @ConnectedSocket() client: Socket,
-  ): void {
+  ): Promise<void> {
     const user = client.data.user;
     const { group, amount, batch } = bid;
 
@@ -207,6 +212,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     //   );
     //   return;
     // }
+
+    await this.batchBidsRepository.create({
+      batchId: batch,
+      value: amount,
+      userId: user.id,
+    });
 
     // Adiciona o lance ao grupo
     this.groups[group].bids.push({ user, amount });
@@ -429,6 +440,35 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         .emit('timeAdded', { additionalSeconds, batch, group });
     } catch (error) {
       console.log(error);
+      //client.emit('error', error.message);
+    }
+  }
+
+  @SubscribeMessage('decline')
+  handleDecline(
+    @MessageBody()
+    body: { group: string; bids: string[]; reason: string },
+    @ConnectedSocket() client: Socket,
+  ): void {
+    const user = client.data.user;
+    const { group, bids, reason } = body;
+
+    const groupState = this.groups[group];
+
+    // if (!groupState || user.role !== 'ADMIN') {
+    //   return;
+    // }
+    try {
+      bids.map(async id => {
+        await this.batchBidsRepository.update(id, {
+          reason,
+          isDecline: true,
+        });
+
+        this.server.to(group).emit('decline', { bids });
+      });
+    } catch (error) {
+      console.error(error);
       //client.emit('error', error.message);
     }
   }
