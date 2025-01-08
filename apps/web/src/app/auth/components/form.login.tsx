@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import FormSocialLogin from "./form-social.login";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import Image from "next/image";
-import { signIn } from "@/actions/auth.action";
+import { signIn } from '@/actions/auth.action';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { zodResolver } from '@hookform/resolvers/zod';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import FormSocialLogin from './form-social.login';
 
 const signInSchema = z.object({
   email: z.string().email(),
@@ -21,7 +21,7 @@ type SignInSchema = z.infer<typeof signInSchema>;
 
 const FormLogin = () => {
   const router = useRouter();
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   const {
     register,
@@ -38,14 +38,14 @@ const FormLogin = () => {
       console.log(response);
 
       if (response?.ok) {
-        router.push("/");
+        router.push('/');
       } else {
         console.error(response?.error?.message);
-        setError("Check your Credentials");
+        setError('Check your Credentials');
       }
     } catch (err) {
       console.error(err);
-      setError("Check your Credentials");
+      setError('Check your Credentials');
     }
   }
 
@@ -59,7 +59,6 @@ const FormLogin = () => {
               src="/icons/logo2.png"
               width={173}
               height={39}
-              layout="responsive"
               alt="Finance AI"
               className="mb-2"
             />
@@ -79,7 +78,7 @@ const FormLogin = () => {
                     autoCapitalize="none"
                     autoComplete="email"
                     autoCorrect="off"
-                    {...register("email")}
+                    {...register('email')}
                   />
                 </div>
 
@@ -93,7 +92,7 @@ const FormLogin = () => {
                     autoCapitalize="none"
                     autoComplete="email"
                     autoCorrect="off"
-                    {...register("password")}
+                    {...register('password')}
                   />
                 </div>
 

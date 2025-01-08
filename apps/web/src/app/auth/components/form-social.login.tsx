@@ -1,7 +1,7 @@
-"use client";
-import { signInSocial } from "@/actions/auth.action";
-import { Separator } from "@/components/ui/separator";
-import Image from "next/image";
+'use client';
+import { signInSocial } from '@/actions/auth.action';
+import { Separator } from '@/components/ui/separator';
+import Image from 'next/image';
 
 const FormSocialLogin = () => {
   async function handleAuthenticate() {
@@ -21,7 +21,6 @@ const FormSocialLogin = () => {
           src="/icons/social_google_logo.png"
           width={40}
           height={40}
-          layout="responsive"
           alt="Connect Google"
         />
       </button>

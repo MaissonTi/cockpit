@@ -1,15 +1,11 @@
-import Image from "next/image";
+import Image from 'next/image';
 
-export async function AuthLayout({
-  children, // will be a page or nested layout
-}: {
-  children: React.ReactNode;
-}) {
+export async function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="grid h-full grid-cols-2">
       <div className="relative h-full w-full">
         <Image
-          src="/login.png"
+          src="/img/login.png"
           alt="Faça login"
           fill
           className="object-cover"
