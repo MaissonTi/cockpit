@@ -20,16 +20,6 @@ async function seed() {
     },
   });
 
-  await prisma.user.create({
-    data: {
-      id: '8349f2e7-de94-43af-8607-9046645954a8',
-      name: 'Lord',
-      email: 'lord@gmail.com',
-      password: passwordHash,
-      role: UserRoleEnum.COMMON,
-    },
-  });
-
   const promise = [];
 
   Array.from({ length: 30 }).map(async () => {
@@ -39,31 +29,6 @@ async function seed() {
           name: faker.person.fullName(),
           email: faker.internet.email(),
           password: passwordHash,
-        },
-      }),
-    );
-  });
-
-  await Promise.all(promise);
-
-  await seedProcess();
-}
-
-async function seedProcess() {
-  const promise = [];
-
-  Array.from({ length: 3 }).map(async () => {
-    promise.push(
-      prisma.processDispute.create({
-        data: {
-          name: faker.music.album(),
-          batch: {
-            createMany: {
-              data: Array.from({ length: 3 }).map(() => ({
-                name: faker.music.genre(),
-              })),
-            },
-          },
         },
       }),
     );

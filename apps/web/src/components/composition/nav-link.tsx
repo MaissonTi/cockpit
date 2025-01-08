@@ -1,6 +1,7 @@
-import Link from "next/link";
-import { ComponentProps } from "react";
-import { usePathname } from "next/navigation";
+'use client';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { ComponentProps } from 'react';
 
 export type NavLinkProps = ComponentProps<typeof Link>;
 

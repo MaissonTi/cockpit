@@ -1,4 +1,4 @@
-import { Settings, LogOut, User } from 'lucide-react';
+import { signOut } from '@/actions/auth.action';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import {
@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
-import { signOut } from '@/actions/auth.action';
+import { LogOut, Settings, User } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 
 export function AccountMenu() {

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   AlertDialog,
@@ -9,10 +9,10 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { AlertDialogGeneralProps, useListAlert } from "@/hooks/use-alert";
-import { Loader2Icon } from "lucide-react";
-import { useCallback, useState } from "react";
+} from '@/components/ui/alert-dialog';
+import { AlertDialogGeneralProps, useListAlert } from '@/hooks/use-alert';
+import { Loader2Icon } from 'lucide-react';
+import { useCallback, useState } from 'react';
 
 export function AlertDialogGeneral({
   title,
@@ -29,7 +29,7 @@ export function AlertDialogGeneral({
       setPending(true);
     }
 
-    return callback && callback("confirm");
+    return callback && callback('confirm');
   }, [callback, isAsync]);
 
   return (
@@ -40,14 +40,14 @@ export function AlertDialogGeneral({
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={() => callback && callback("cancel")}>
+          <AlertDialogCancel onClick={() => callback && callback('cancel')}>
             Não
           </AlertDialogCancel>
           <AlertDialogAction onClick={execute}>
             {isPending ? (
               <Loader2Icon className="h-5 w-5 animate-spin text-muted-foreground" />
             ) : (
-              "Sim"
+              'Sim'
             )}
           </AlertDialogAction>
         </AlertDialogFooter>
