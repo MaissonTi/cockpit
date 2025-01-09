@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import { AlertTriangle, Loader2 } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { useFormState } from "@/hooks/use-form-state";
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { useFormState } from '@/hooks/use-form-state';
+import { AlertTriangle, Loader2 } from 'lucide-react';
 
+import { TInput } from '@/components/composition/form/t-input';
+import { useParams, useRouter } from 'next/navigation';
 import {
   userCreateAction,
   userUpdateAction,
   UserUpdateSchema,
-} from "../actions";
-import { useParams, useRouter } from "next/navigation";
-import { TInput } from "@/components/composition/form/t-input";
+} from '../actions';
 
 interface UsersFormProps {
   isUpdating?: boolean;
@@ -23,7 +23,7 @@ export function UsersForm({ initialData }: UsersFormProps) {
   const router = useRouter();
 
   const formAction = uuid ? userUpdateAction : userCreateAction;
-  const label = uuid ? "Atualizar" : "Criar";
+  const label = uuid ? 'Atualizar' : 'Criar';
 
   const [{ errors, message, success }, handleSubmit, isPending] = useFormState(
     formAction,

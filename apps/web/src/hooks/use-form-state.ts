@@ -1,9 +1,9 @@
-import { FormEvent, useState, useTransition } from 'react'
-export interface FormState<T>  {
-  success: boolean
-  message: string | null
-  errors: Record<string, string[]> | null
-  data?: T
+import { FormEvent, useState, useTransition } from 'react';
+export interface FormState<T> {
+  success: boolean;
+  message: string | null;
+  errors: Record<string, string[]> | null;
+  data?: T;
 }
 
 export function useFormState<T>(
@@ -11,32 +11,31 @@ export function useFormState<T>(
   onSuccess?: (data?: T | undefined) => Promise<void> | void,
   initialState?: FormState<T>,
 ) {
-  const [isPending, startTransition] = useTransition()
+  const [isPending, startTransition] = useTransition();
   const [formState, setFormState] = useState(
     initialState ?? { data: null, success: false, message: null, errors: null },
-  )
+  );
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
-    event.preventDefault()
+  async function handleSubmit(
+    event: FormEvent<HTMLFormElement>,
+  ): Promise<void> {
+    event.preventDefault();
 
-    const form = event.currentTarget
-    const data = new FormData(form)
+    const form = event.currentTarget;
+    const data = new FormData(form);
 
-    console.log('useFormState', data)
+    console.log('useFormState', data);
 
     startTransition(async () => {
-      const state = await action(data)
+      const state = await action(data);
 
       if (state.success && onSuccess) {
-        await onSuccess(state.data)
+        await onSuccess(state.data);
       }
 
-      setFormState(state)
-    })
+      setFormState(state);
+    });
   }
 
-  return [handleSubmit, formState, isPending] as const
+  return [handleSubmit, formState, isPending] as const;
 }
-
-
-
