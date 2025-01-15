@@ -49,7 +49,7 @@ export async function validateActionZod(
 ): Promise<ResponseAction> {
   const { data, schema, service } = params;
 
-  const result = schema.safeParse(Object.fromEntries(data));
+  const result = schema.safeParse(Object.fromEntries(data as any));
 
   if (!result.success) {
     const errors = Object.fromEntries(

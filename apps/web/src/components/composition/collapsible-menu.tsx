@@ -42,7 +42,7 @@ const CollapsibleMenu: React.FC<CollapsibleMenuProps> = ({
             <div className="flex items-center gap-2">{title.children}</div>
 
             <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="icon-xs">
+              <Button variant="ghost" size="sm">
                 <Icon />
               </Button>
             </CollapsibleTrigger>

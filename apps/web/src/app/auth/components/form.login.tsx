@@ -40,7 +40,7 @@ const FormLogin = () => {
       if (response?.ok) {
         router.push('/');
       } else {
-        console.error(response?.error?.message);
+        console.error(response?.error);
         setError('Check your Credentials');
       }
     } catch (err) {

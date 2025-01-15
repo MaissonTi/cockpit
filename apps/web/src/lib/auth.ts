@@ -2,9 +2,16 @@ import NextAuth, { AuthOptions, User } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider, { GoogleProfile } from 'next-auth/providers/google';
 
+declare module 'next-auth/jwt' {
+  interface JWT {
+    user?: User;
+    accessToken?: string;
+  }
+}
 declare module 'next-auth' {
   interface User {
     access_token?: string;
+    role: string;
   }
 }
 
@@ -57,21 +64,21 @@ export const authOptions: AuthOptions = {
         },
       },
       profile(profile: GoogleProfile) {
-        //console.log('profile -----------------------------------------------------', profile)
-        // gmail 100923893644933301087
-        // ripio 110119254361704976828
         return {
           id: profile.sub,
           name: profile.name,
           username: '',
           email: profile.email,
           avatar_url: profile.picture,
+          role: '', // Add appropriate role
+          isAdmin: false, // Set appropriate isAdmin value
+          accessToken: '', // Set appropriate accessToken value
         };
       },
     }),
   ],
   events: {
-    signIn: async (message) => {},
+    signIn: async message => {},
   },
   callbacks: {
     async signIn(data) {
