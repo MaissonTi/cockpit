@@ -14,6 +14,9 @@ module.exports = {
     browser: true,
   },
   plugins: ['only-warn'],
+  rules: {
+    '@typescript-eslint/no-duplicate-enum-values': 'off',
+  },
   settings: {
     'import/resolver': {
       typescript: {

@@ -42,6 +42,10 @@ jobs:
         working-directory: ./apps/api
         run: pnpm prisma generate
 
+      # Atualizar Browserslist DB
+      - name: Update Browserslist DB
+        run: npx update-browserslist-db@latest --update-db
+
       # Build do projeto
       - name: Build project
         run: pnpm run build

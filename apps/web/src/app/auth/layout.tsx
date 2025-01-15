@@ -1,6 +1,6 @@
 import Image from 'next/image';
 
-export async function AuthLayout({ children }: { children: React.ReactNode }) {
+function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="grid h-full grid-cols-2">
       <div className="relative h-full w-full">
