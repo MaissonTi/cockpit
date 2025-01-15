@@ -3,8 +3,8 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-} from "lucide-react";
-import { Button } from "../ui/button";
+} from 'lucide-react';
+import { Button } from '../ui/button';
 
 interface PaginationProps {
   pageIndex: number;

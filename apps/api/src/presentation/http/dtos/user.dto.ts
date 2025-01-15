@@ -1,7 +1,13 @@
 import { UserRoleEnum } from '@/domain/enum/user-roles.enum';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 import { PaginationQueryDTO, PaginationResponseDTO } from './_pagination.dto';
 
 export class UserRequestDTO {

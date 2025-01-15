@@ -86,7 +86,7 @@ export class UserController {
     });
     return {
       ...result,
-      data: result.data.map((user) =>
+      data: result.data.map(user =>
         UserPresenter.toHTTP<UserResponseDTO>(user).get(),
       ),
     };

@@ -4,8 +4,7 @@ import usecase from './commands/usecase.plop';
 import init from './scripts';
 
 export default function (plop: NodePlopAPI) {
-  init(plop)
-  crud(plop)
-  usecase(plop)
-};
-
+  init(plop);
+  crud(plop);
+  usecase(plop);
+}

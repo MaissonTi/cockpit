@@ -16,9 +16,8 @@ interface UserModalProps {
 }
 
 const UserModal: React.FC<UserModalProps> = ({ params }) => {
-  const [push, searchParams, back] = usePushParams();
-
-  console.log(searchParams);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { back } = usePushParams();
 
   return (
     <Dialog defaultOpen={true} onOpenChange={() => back()}>

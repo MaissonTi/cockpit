@@ -1,8 +1,5 @@
 import { api, Options } from '@/lib/http-service';
-import {
-  UserMessageResponseDTO as Message,
-  UserMessageListResponseDTO,
-} from '@repo/domain/dtos/user-message.dto';
+import { UserMessageResponseDTO as Message } from '@repo/domain/dtos/user-message.dto';
 
 interface ListParams {
   currentPage: number;

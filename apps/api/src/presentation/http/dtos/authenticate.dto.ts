@@ -23,6 +23,8 @@ export class AuthenticateSessionOutputDTO {
   @ApiProperty({ example: 'John Doe' })
   user: UserSessionOutputDTO;
 
-  @ApiProperty({ example: 'klqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUEzcXZ' })
+  @ApiProperty({
+    example: 'klqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUEzcXZ',
+  })
   access_token: string;
 }

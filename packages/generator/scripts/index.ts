@@ -6,10 +6,9 @@ import helpers from './helpers';
 import partial from './partial';
 
 export default function (plop: NodePlopAPI) {
-  helpers(plop)
-  partial(plop)
-  addCrud(plop)
-  addUsecase(plop)
-  execSync(plop)
-};
-
+  helpers(plop);
+  partial(plop);
+  addCrud(plop);
+  addUsecase(plop);
+  execSync(plop);
+}

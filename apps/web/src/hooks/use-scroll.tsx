@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 interface UseScrollProps {
-  dependencies: any[]; // Dependências para disparar o scroll
+  dependencies: unknown[]; // Dependências para disparar o scroll
 }
 
 const useScroll = ({ dependencies }: UseScrollProps) => {

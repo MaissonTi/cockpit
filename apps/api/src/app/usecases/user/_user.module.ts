@@ -13,28 +13,34 @@ import { ListUserUseCase } from './list-user.usecase';
     {
       inject: [UserRepository.name, BcryptHasher.name],
       provide: CreateUserUseCase.name,
-      useFactory: (userRepository: UserRepository, bcryptHasher: BcryptHasher) =>
-        new CreateUserUseCase(userRepository, bcryptHasher),
+      useFactory: (
+        userRepository: UserRepository,
+        bcryptHasher: BcryptHasher,
+      ) => new CreateUserUseCase(userRepository, bcryptHasher),
     },
     {
       inject: [UserRepository.name],
       provide: ListUserUseCase.name,
-      useFactory: (userRepository: UserRepository) => new ListUserUseCase(userRepository),
+      useFactory: (userRepository: UserRepository) =>
+        new ListUserUseCase(userRepository),
     },
     {
       inject: [UserRepository.name],
       provide: UpdateUserUseCase.name,
-      useFactory: (userRepository: UserRepository) => new UpdateUserUseCase(userRepository),
+      useFactory: (userRepository: UserRepository) =>
+        new UpdateUserUseCase(userRepository),
     },
     {
       inject: [UserRepository.name],
       provide: DeleteUserUseCase.name,
-      useFactory: (userRepository: UserRepository) => new DeleteUserUseCase(userRepository),
+      useFactory: (userRepository: UserRepository) =>
+        new DeleteUserUseCase(userRepository),
     },
     {
       inject: [UserRepository.name],
       provide: GetUserUseCase.name,
-      useFactory: (userRepository: UserRepository) => new GetUserUseCase(userRepository),
+      useFactory: (userRepository: UserRepository) =>
+        new GetUserUseCase(userRepository),
     },
   ],
   exports: [

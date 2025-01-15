@@ -12,5 +12,8 @@ export interface IUserRepository {
   create(data: IUserRepository.paramsCreate): Promise<UserModel>;
   update(id: string, data: IUserRepository.paramsUpdate): Promise<UserModel>;
   delete(id: string): Promise<void>;
-  list(filter?: Partial<UserModel>, pagination?: Pagination): Promise<Paginated<UserModel>>;
+  list(
+    filter?: Partial<UserModel>,
+    pagination?: Pagination,
+  ): Promise<Paginated<UserModel>>;
 }

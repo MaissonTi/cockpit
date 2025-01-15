@@ -4,7 +4,10 @@ import { IListUserUseCase } from '@/domain/usecases/user/list-user.usecase.inter
 
 export class ListUserUseCase implements IListUserUseCase {
   constructor(private readonly userRepository: IUserRepository) {}
-  async execute(params?: IListUserUseCase.Input, pagination?: Pagination): Promise<IListUserUseCase.Output> {
+  async execute(
+    params?: IListUserUseCase.Input,
+    pagination?: Pagination,
+  ): Promise<IListUserUseCase.Output> {
     return this.userRepository.list(params, pagination);
   }
 }

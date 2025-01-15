@@ -11,8 +11,11 @@ import { AuthenticateUseCase } from './authenticate.usecase';
     {
       inject: [UserRepository.name, BcryptHasher.name, JwtEncrypter.name],
       provide: AuthenticateUseCase.name,
-      useFactory: (userRepository: UserRepository, bcryptHasher: BcryptHasher, jwtEncrypter: JwtEncrypter) =>
-        new AuthenticateUseCase(userRepository, bcryptHasher, jwtEncrypter),
+      useFactory: (
+        userRepository: UserRepository,
+        bcryptHasher: BcryptHasher,
+        jwtEncrypter: JwtEncrypter,
+      ) => new AuthenticateUseCase(userRepository, bcryptHasher, jwtEncrypter),
     },
   ],
   exports: [AuthenticateUseCase.name],

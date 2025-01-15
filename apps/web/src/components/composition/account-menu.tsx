@@ -44,9 +44,9 @@ export function AccountMenu() {
               </div>
             ) : (
               <>
-                {session?.name}
+                {session?.user?.name}
                 <span className="text-xs font-normal text-muted-foreground">
-                  {session?.role}
+                  Role{/* {session?.user?.role} */}
                 </span>
               </>
             )}

@@ -4,7 +4,10 @@ import { NotFoundException } from '@nestjs/common';
 
 export class UpdateUserUseCase implements IUpdateUserUseCase {
   constructor(private readonly userRepository: IUserRepository) {}
-  async execute(id: string, data: IUpdateUserUseCase.Input): Promise<IUpdateUserUseCase.Output> {
+  async execute(
+    id: string,
+    data: IUpdateUserUseCase.Input,
+  ): Promise<IUpdateUserUseCase.Output> {
     const model = await this.userRepository.find(id);
 
     if (!model) {

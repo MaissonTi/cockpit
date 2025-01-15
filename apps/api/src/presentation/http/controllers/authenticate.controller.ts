@@ -3,7 +3,10 @@ import { IAuthenticateUseCase } from '@/domain/usecases/authenticate/authenticat
 import { Public } from '@/infra/auth/public';
 import { Body, Controller, Get, Inject, Post, Request } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { AuthenticateSessionInputDTO, AuthenticateSessionOutputDTO } from '../dtos/authenticate.dto';
+import {
+  AuthenticateSessionInputDTO,
+  AuthenticateSessionOutputDTO,
+} from '../dtos/authenticate.dto';
 
 @ApiTags('Authenticate')
 @Controller('sessions')
@@ -15,7 +18,9 @@ export class AuthenticateController {
 
   @Post()
   @Public()
-  async session(@Body() { email, password }: AuthenticateSessionInputDTO): Promise<AuthenticateSessionOutputDTO> {
+  async session(
+    @Body() { email, password }: AuthenticateSessionInputDTO,
+  ): Promise<AuthenticateSessionOutputDTO> {
     const restul = await this.authenticateUseCase.execute({ email, password });
     return restul;
   }

@@ -1,17 +1,16 @@
-import NextAuth, { AuthOptions, User } from 'next-auth';
+import NextAuth, { AuthOptions, Session, User } from 'next-auth';
+import { Account, JWT } from 'next-auth/jwt';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider, { GoogleProfile } from 'next-auth/providers/google';
 
 declare module 'next-auth/jwt' {
   interface JWT {
-    user?: User;
+    user?: User & { isAdmin?: boolean };
     accessToken?: string;
   }
-}
-declare module 'next-auth' {
-  interface User {
-    access_token?: string;
-    role: string;
+
+  interface Account {
+    type?: string;
   }
 }
 
@@ -28,27 +27,30 @@ export const authOptions: AuthOptions = {
     CredentialsProvider({
       name: 'credentials',
       credentials: {
-        email: {},
-        password: {},
+        email: { label: 'Email', type: 'text' },
+        password: { label: 'Password', type: 'password' },
       },
-      async authorize(credentials) {
+      async authorize(
+        credentials: Record<'email' | 'password', string> | undefined,
+      ) {
+        if (!credentials) return null;
+
         const res = await fetch('http://localhost:3333/sessions', {
           method: 'POST',
           body: JSON.stringify({
-            email: credentials?.email,
-            password: credentials?.password,
+            email: credentials.email,
+            password: credentials.password,
           }),
           cache: 'no-store',
           headers: { 'Content-Type': 'application/json' },
         });
-        const { user, access_token } = (await res.json()) as {
-          user: User;
-          access_token: string;
-        };
 
-        if (res.ok && user && access_token) {
-          return { ...user, access_token };
+        const data: { user: User; access_token: string } = await res.json();
+
+        if (res.ok && data.user && data.access_token) {
+          return { ...data.user, access_token: data.access_token };
         }
+
         return null;
       },
     }),
@@ -67,43 +69,52 @@ export const authOptions: AuthOptions = {
         return {
           id: profile.sub,
           name: profile.name,
-          username: '',
+          username: profile.email.split('@')[0],
           email: profile.email,
           avatar_url: profile.picture,
-          role: '', // Add appropriate role
-          isAdmin: false, // Set appropriate isAdmin value
-          accessToken: '', // Set appropriate accessToken value
+          role: 'USER', // Default role, can be updated dynamically
+          isAdmin: false, // Default value
+          accessToken: '', // Placeholder for future use
         };
       },
     }),
   ],
   events: {
-    signIn: async message => {},
+    // Optional event handlers
   },
   callbacks: {
-    async signIn(data) {
+    async signIn() {
       return true;
     },
-    async jwt({ token, account, user }) {
-      if (account?.type === 'credentials') {
-        token.accessToken = user?.access_token;
-        token.user = user;
+    async jwt({
+      token,
+      account,
+      user,
+    }: {
+      token: JWT;
+      account?: Account | null;
+      user?: User | null;
+    }): Promise<JWT> {
+      if (account?.type === 'credentials' && user) {
+        token.accessToken = user.access_token;
+        token.user = user as User & { isAdmin?: boolean };
       }
 
-      // if(account?.type === 'google') {
-      //   token.accessToken = account?.accessToken;
-      // }
       return token;
     },
-    async session({ session, token }) {
+    async session({
+      session,
+      token,
+    }: {
+      session: Session;
+      token: JWT;
+    }): Promise<Session> {
       if (token?.user) {
-        return {
-          ...session,
-          ...token?.user,
-          accessToken: token.accessToken,
-          isAdmin: token?.user?.role === 'ADMIN',
-        };
+        session.user = token.user;
+        session.accessToken = token.accessToken || '';
+        session.isAdmin = token.user.role === 'ADMIN';
       }
+
       return session;
     },
   },

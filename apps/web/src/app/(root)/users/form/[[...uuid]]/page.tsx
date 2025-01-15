@@ -1,8 +1,8 @@
-import { notFound } from "next/navigation";
-import { UsersForm } from "../../components/user-form";
-import { use } from "react";
-import UserService from "@/services/user.service";
-import { UserUpdateSchema } from "../../actions";
+import { notFound } from 'next/navigation';
+import { UsersForm } from '../../components/user-form';
+import { use } from 'react';
+import UserService from '@/services/user.service';
+import { UserUpdateSchema } from '../../actions';
 
 interface PageProps {
   params: {
@@ -14,7 +14,7 @@ export default function UserFormPage({ params }: PageProps) {
   let initialData = {} as UserUpdateSchema;
 
   if (params.uuid) {
-    const data = use(UserService.find(params.uuid, { cache: "no-cache" }));
+    const data = use(UserService.find(params.uuid, { cache: 'no-cache' }));
     if (!data) return notFound();
     initialData = data;
   }

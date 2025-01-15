@@ -1,6 +1,11 @@
 import { Controller, Get } from '@nestjs/common';
 import { Transport } from '@nestjs/microservices';
-import { HealthCheck, HealthCheckResult, HealthCheckService, MicroserviceHealthIndicator } from '@nestjs/terminus';
+import {
+  HealthCheck,
+  HealthCheckResult,
+  HealthCheckService,
+  MicroserviceHealthIndicator,
+} from '@nestjs/terminus';
 
 @Controller('health')
 export class HealthController {

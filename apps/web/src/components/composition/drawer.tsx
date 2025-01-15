@@ -58,7 +58,6 @@ interface DrawerOverlayProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 const DrawerOverlay: React.FC<DrawerOverlayProps> = ({
   className,
-  children,
   open = true,
   ...props
 }) => {

@@ -25,12 +25,13 @@ export function UsersForm({ initialData }: UsersFormProps) {
   const formAction = uuid ? userUpdateAction : userCreateAction;
   const label = uuid ? 'Atualizar' : 'Criar';
 
-  const [{ errors, message, success }, handleSubmit, isPending] = useFormState(
-    formAction,
-    () => {
-      router.back();
-    },
-  );
+  const {
+    formState: { errors, message, success },
+    handleSubmit,
+    isPending,
+  } = useFormState(formAction, () => {
+    router.back();
+  });
 
   return (
     <>

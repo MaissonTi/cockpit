@@ -35,5 +35,5 @@ export function useFormState<T>(
     });
   }
 
-  return [formState, handleSubmit, isPending] as const;
+  return { formState, handleSubmit, isPending } as const;
 }

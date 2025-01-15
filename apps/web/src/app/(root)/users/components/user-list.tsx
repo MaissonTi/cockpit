@@ -1,7 +1,4 @@
-"use client";
-
-import { z } from "zod";
-import { Loader2Icon } from "lucide-react";
+'use client';
 import {
   Table,
   TableBody,
@@ -9,43 +6,46 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
+import { Loader2Icon } from 'lucide-react';
+import { Suspense } from 'react';
+import { z } from 'zod';
 
-import { useQuery, useMutation } from "@tanstack/react-query";
-import UserService from "@/services/user.service";
-import { UserListSkeleton } from "./user-list-skeleton";
-import { UserListRow, RetrunAction } from "./user-list-row";
-import { Pagination } from "@/components/composition/pagination";
-import { usePushParams } from "@/hooks/use-push-params";
+import { Pagination } from '@/components/composition/pagination';
+import { usePushParams } from '@/hooks/use-push-params';
+import UserService from '@/services/user.service';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { RetrunAction, UserListRow } from './user-list-row';
+import { UserListSkeleton } from './user-list-skeleton';
 
-import { useAlertDialog } from "@/hooks/use-alert";
-import { queryClient } from "@/lib/react-query";
-import { Button } from "@/components/ui/button";
-import { UserListFilters } from "./user-list-filters";
+import { Button } from '@/components/ui/button';
+import { useAlertDialog } from '@/hooks/use-alert';
+import { queryClient } from '@/lib/react-query';
+import { UserListFilters } from './user-list-filters';
 
 export default function UserList() {
   const { alertDialog, dismiss } = useAlertDialog();
-  const [push, searchParams] = usePushParams<{
+  const { push, searchParams } = usePushParams<{
     page: string;
   }>();
 
   const currentPage = z.coerce
     .number()
-    .transform((page) => page)
-    .parse(searchParams.get("page") ?? "1");
+    .transform(page => page)
+    .parse(searchParams.get('page') ?? '1');
 
   const {
     data: result,
     isLoading,
     isFetching,
   } = useQuery({
-    queryKey: ["user-list-page", currentPage, searchParams.get("name")],
+    queryKey: ['user-list-page', currentPage, searchParams.get('name')],
     queryFn: () =>
       UserService.list({
         currentPage: currentPage,
         perPage: 10,
         filters: {
-          name: searchParams.get("name") || "",
+          name: searchParams.get('name') || '',
         },
       }),
   });
@@ -54,14 +54,14 @@ export default function UserList() {
     mutationFn: UserService.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["user-list-page", currentPage, searchParams.get("name")],
+        queryKey: ['user-list-page', currentPage, searchParams.get('name')],
       });
     },
   });
 
   function handlePaginate(pageIndex: number) {
     const result = new URLSearchParams(searchParams);
-    result.set("page", String(pageIndex));
+    result.set('page', String(pageIndex));
 
     push({ search: result.toString() });
   }
@@ -72,10 +72,10 @@ export default function UserList() {
 
   function handleDelete(values: { id: string }) {
     alertDialog({
-      title: "Edit User",
+      title: 'Edit User',
       isAsync: true,
-      callback: async (typeAction) => {
-        if (typeAction === "confirm") {
+      callback: async typeAction => {
+        if (typeAction === 'confirm') {
           await userDelete(values?.id);
           dismiss();
         }
@@ -88,8 +88,8 @@ export default function UserList() {
     values,
   }: RetrunAction & { values: { id: string } }) {
     const hashmap: Map<string, () => void> = new Map();
-    hashmap.set("edit", () => handleEdit(values));
-    hashmap.set("delete", () => handleDelete(values));
+    hashmap.set('edit', () => handleEdit(values));
+    hashmap.set('delete', () => handleDelete(values));
 
     const actionFn = hashmap.get(type);
     if (actionFn) {
@@ -98,7 +98,7 @@ export default function UserList() {
   }
 
   return (
-    <>
+    <Suspense fallback={<div>Carregando...</div>}>
       <div className="flex flex-col gap-4">
         <div className="flex justify-between">
           <h1 className="flex items-center gap-3 text-3xl font-bold tracking-tight">
@@ -127,7 +127,7 @@ export default function UserList() {
                 {isLoading && !result && <UserListSkeleton />}
 
                 {result?.data &&
-                  result.data.map((user) => {
+                  result.data.map(user => {
                     return (
                       <UserListRow
                         key={user.id}
@@ -161,6 +161,6 @@ export default function UserList() {
           )}
         </div>
       </div>
-    </>
+    </Suspense>
   );
 }

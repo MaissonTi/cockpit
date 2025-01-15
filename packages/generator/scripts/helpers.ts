@@ -1,15 +1,21 @@
-import fs from "fs";
-import { NodePlopAPI } from "plop";
-import { ActionReplace, ConfigReplace, EnumImport, EnumVerboRoute, PlopType } from "./types";
+import fs from 'fs';
+import { NodePlopAPI } from 'plop';
+import {
+  ActionReplace,
+  ConfigReplace,
+  EnumImport,
+  EnumVerboRoute,
+  PlopType,
+} from './types';
 
 export default function (plop: NodePlopAPI) {
   plop.setHelper('verbo', value => {
-    const verbo = EnumVerboRoute[value || 'POST' ]
-    return `${verbo}`
+    const verbo = EnumVerboRoute[value || 'POST'];
+    return `${verbo}`;
   });
 
   plop.setHelper('public', value => {
-    return value ? `@Public()` : ''
+    return value ? `@Public()` : '';
   });
 
   plop.setHelper('or', function (value, fallback) {
@@ -17,14 +23,23 @@ export default function (plop: NodePlopAPI) {
   });
 }
 
-export function injectModule(plopType: PlopType, modulePath: string, imports: EnumImport[], files: ActionReplace[] ){
-  const { plop, answers} = plopType
+export function injectModule(
+  plopType: PlopType,
+  modulePath: string,
+  imports: EnumImport[],
+  files: ActionReplace[],
+) {
+  const { plop, answers } = plopType;
 
   try {
     const fileContent = fs.readFileSync(modulePath, 'utf8');
-    let updatedContent = addImports(imports, fileContent)
-    updatedContent = replaceFileContent(updatedContent, files)
-    fs.writeFileSync(modulePath, plop.renderString(updatedContent, answers), 'utf8');
+    let updatedContent = addImports(imports, fileContent);
+    updatedContent = replaceFileContent(updatedContent, files);
+    fs.writeFileSync(
+      modulePath,
+      plop.renderString(updatedContent, answers),
+      'utf8',
+    );
 
     return 'Arquivo atualizado com sucesso.';
   } catch (error) {
@@ -32,71 +47,70 @@ export function injectModule(plopType: PlopType, modulePath: string, imports: En
   }
 }
 
-function configToReplace(module: ActionReplace ){
+function configToReplace(module: ActionReplace) {
   const mapperRegExp = new Map<ActionReplace, ConfigReplace>();
 
-  mapperRegExp.set(ActionReplace.Imports,  {
-    name: "imports",
+  mapperRegExp.set(ActionReplace.Imports, {
+    name: 'imports',
     regex: /(imports:\s*\[)([^\]]*)\]/,
     template: (match, start, existingName, end) => {
-      return `${start}${existingName?.trim()}, {{ pascalCase usecase_name }}Module]`
-    }
-  })
+      return `${start}${existingName?.trim()}, {{ pascalCase usecase_name }}Module]`;
+    },
+  });
 
   mapperRegExp.set(ActionReplace.Exports, {
-    name: "exports",
+    name: 'exports',
     regex: /(exports:\s*\[)([^\]]*)\]/,
     template: (match, start, existingName, end) => {
-      return `${start}${existingName.trim()}, {{ pascalCase usecase_name }}Module]`
-    }
-  })
+      return `${start}${existingName.trim()}, {{ pascalCase usecase_name }}Module]`;
+    },
+  });
 
-  mapperRegExp.set(ActionReplace.ProvidersRepo,  {
-    name: "imports",
+  mapperRegExp.set(ActionReplace.ProvidersRepo, {
+    name: 'imports',
     regex: /(providers:\s*\[)([^\]]*)\]/,
     template: (match, start, existingName, end) => {
-      return `${start}${existingName?.trim()}, {{ pascalCase usecase_name }}Repository.toFactory()]`
-    }
-  })
+      return `${start}${existingName?.trim()}, {{ pascalCase usecase_name }}Repository.toFactory()]`;
+    },
+  });
 
   mapperRegExp.set(ActionReplace.ExportsRepo, {
-    name: "exports",
+    name: 'exports',
     regex: /(exports:\s*\[)([^\]]*)\]/,
     template: (match, start, existingName, end) => {
-      return `${start}${existingName.trim()}, {{ pascalCase usecase_name }}Repository.name]`
-    }
-  })
+      return `${start}${existingName.trim()}, {{ pascalCase usecase_name }}Repository.name]`;
+    },
+  });
 
   mapperRegExp.set(ActionReplace.ExportsFactory, {
-    name: "exports",
+    name: 'exports',
     regex: /(exports:\s*\[)([^\]]*)\]/,
     template: (match, start, existingName, end) => {
-      return `${start}${existingName.trim()}, {{ pascalCase usecase_name }}UseCase.name]`
-    }
-  })
+      return `${start}${existingName.trim()}, {{ pascalCase usecase_name }}UseCase.name]`;
+    },
+  });
 
   mapperRegExp.set(ActionReplace.Controllers, {
-    name: "controllers",
+    name: 'controllers',
     regex: /(controllers:\s*\[)([^\]]*)\]/,
     template: (match, start, existingName, end) => {
-      return  `${start}${existingName.trim()}, {{ pascalCase usecase_name }}Controller]`
-    }
-  })
-
+      return `${start}${existingName.trim()}, {{ pascalCase usecase_name }}Controller]`;
+    },
+  });
 
   mapperRegExp.set(ActionReplace.ControllersAddConstructor, {
-    name: "constructor",
+    name: 'constructor',
     regex: /(constructor\([\s\S]*?,)\s*(?=\n\s*\))/,
     template: (match, start, existingName, end) => {
       return `${start}
         @Inject({{ pascalCase usecase_name }}UseCase.name)
         private readonly {{ camelCase usecase_name }}UseCase: I{{ pascalCase usecase_name }}UseCase,
-      `
-    }
-  })
+      `;
+    },
+  });
 
   mapperRegExp.set(ActionReplace.ControllersAdd, {
-    name: "router",
+    name: 'router',
     regex: /import[\s\S]*?(?=}\s*$)/,
     template: (match, start, existingContent, end) => {
       return `${match}
@@ -105,11 +119,11 @@ function configToReplace(module: ActionReplace ){
             const result = await this.{{ camelCase usecase_name }}UseCase.execute({ value: name });
             return { name: result };
           }`;
-    }
-  })
+    },
+  });
 
   mapperRegExp.set(ActionReplace.ProvidersFactory, {
-    name: "providers",
+    name: 'providers',
     regex: /(providers:\s*\[\s*)((?:[^{}]*?{[^{}]*?}[^{}]*?)*)(\s*\])/,
     template: (match, start, existingName, end) => {
       return `${start}${existingName.trim()}
@@ -118,12 +132,12 @@ function configToReplace(module: ActionReplace ){
             provide: {{ pascalCase usecase_name }}UseCase.name,
             useFactory: () => new {{ pascalCase usecase_name }}UseCase(),
           },
-      ${end}`
-    }
-  })
+      ${end}`;
+    },
+  });
 
   mapperRegExp.set(ActionReplace.ProvidersRepoFactory, {
-    name: "providers",
+    name: 'providers',
     regex: /(providers:\s*\[\s*)((?:[^{}]*?{[^{}]*?}[^{}]*?)*)(\s*\])/,
     template: (match, start, existingName, end) => {
       return `${start}${existingName.trim()}
@@ -132,17 +146,15 @@ function configToReplace(module: ActionReplace ){
             provide: {{ pascalCase usecase_name }}UseCase.name,
             useFactory: ({{ camelCase selected_module }}Repository: {{ pascalCase selected_module }}Repository) => new {{ pascalCase usecase_name }}UseCase({{ camelCase selected_module }}Repository),
           },
-      ${end}`
-    }
-  })
+      ${end}`;
+    },
+  });
 
-  return mapperRegExp.get(module)
-
+  return mapperRegExp.get(module);
 }
 
-function replaceFileContent(fileContent: string, modules: ActionReplace[]){
-
-  let updatedContent = fileContent
+function replaceFileContent(fileContent: string, modules: ActionReplace[]) {
+  let updatedContent = fileContent;
 
   modules.forEach((module: ActionReplace) => {
     const item = configToReplace(module);
@@ -152,45 +164,67 @@ function replaceFileContent(fileContent: string, modules: ActionReplace[]){
         regex,
         (match, start, existingName, end) => {
           return template(match, start, existingName, end);
-        }
+        },
       );
     }
-  })
+  });
 
-  return updatedContent
+  return updatedContent;
 }
 
-function addImports(imports: EnumImport[], fileContent: string){
+function addImports(imports: EnumImport[], fileContent: string) {
+  let updatedContent = fileContent;
 
-  let updatedContent = fileContent
-
-  imports.map( importsName => {
-
+  imports.map(importsName => {
     const mapperImport = new Map<EnumImport, string>();
-    mapperImport.set(EnumImport.Module, `import { {{ pascalCase usecase_name }}Module } from './{{ kebabCase usecase_name }}/_{{ kebabCase usecase_name }}.module';\n`)
-    mapperImport.set(EnumImport.Controller, `import { {{ pascalCase usecase_name }}Controller } from './http/controllers/{{ kebabCase usecase_name }}.controller';\n`)
-    mapperImport.set(EnumImport.Repository, `import { {{ pascalCase usecase_name }}Repository } from './prisma/repositories/{{ kebabCase usecase_name }}.repository';\n`)
-    mapperImport.set(EnumImport.UseCase, `import { {{ pascalCase usecase_name }}UseCase } from './{{ kebabCase usecase_name }}.usecase';\n`)
+    mapperImport.set(
+      EnumImport.Module,
+      `import { {{ pascalCase usecase_name }}Module } from './{{ kebabCase usecase_name }}/_{{ kebabCase usecase_name }}.module';\n`,
+    );
+    mapperImport.set(
+      EnumImport.Controller,
+      `import { {{ pascalCase usecase_name }}Controller } from './http/controllers/{{ kebabCase usecase_name }}.controller';\n`,
+    );
+    mapperImport.set(
+      EnumImport.Repository,
+      `import { {{ pascalCase usecase_name }}Repository } from './prisma/repositories/{{ kebabCase usecase_name }}.repository';\n`,
+    );
+    mapperImport.set(
+      EnumImport.UseCase,
+      `import { {{ pascalCase usecase_name }}UseCase } from './{{ kebabCase usecase_name }}.usecase';\n`,
+    );
 
-
-    mapperImport.set(EnumImport.RepositoryFolder, `import { {{ pascalCase selected_module }}Repository } from '@/infra/database/prisma/repositories/{{ kebabCase (or selected_module usecase_name) }}.repository';\n`)
-    mapperImport.set(EnumImport.UseCaseInterfaceFolder, `import { I{{ pascalCase usecase_name }}UseCase } from '@/domain/usecases/{{ kebabCase (or selected_module usecase_name) }}/{{ kebabCase usecase_name }}.usecase.interface';\n`);
-    mapperImport.set(EnumImport.UseCaseFolder, `import { {{ pascalCase usecase_name }}UseCase } from '@/app/usecases/{{ kebabCase (or selected_module usecase_name) }}/{{ kebabCase usecase_name }}.usecase';\n`);
-    mapperImport.set(EnumImport.Dtos, `import { {{ pascalCase usecase_name }}InputDTO, {{ pascalCase usecase_name }}OutputDTO } from '../dtos/{{ kebabCase usecase_name }}.dto';\n`);
+    mapperImport.set(
+      EnumImport.RepositoryFolder,
+      `import { {{ pascalCase selected_module }}Repository } from '@/infra/database/prisma/repositories/{{ kebabCase (or selected_module usecase_name) }}.repository';\n`,
+    );
+    mapperImport.set(
+      EnumImport.UseCaseInterfaceFolder,
+      `import { I{{ pascalCase usecase_name }}UseCase } from '@/domain/usecases/{{ kebabCase (or selected_module usecase_name) }}/{{ kebabCase usecase_name }}.usecase.interface';\n`,
+    );
+    mapperImport.set(
+      EnumImport.UseCaseFolder,
+      `import { {{ pascalCase usecase_name }}UseCase } from '@/app/usecases/{{ kebabCase (or selected_module usecase_name) }}/{{ kebabCase usecase_name }}.usecase';\n`,
+    );
+    mapperImport.set(
+      EnumImport.Dtos,
+      `import { {{ pascalCase usecase_name }}InputDTO, {{ pascalCase usecase_name }}OutputDTO } from '../dtos/{{ kebabCase usecase_name }}.dto';\n`,
+    );
 
     const lastImportPattern = /import\s+.*;\n/g;
     const lastImportMatch = updatedContent.match(lastImportPattern);
-    const lastImportIndex = lastImportMatch ? lastImportMatch?.index || 0 + lastImportMatch[0].length : 0;
+    const lastImportIndex = lastImportMatch
+      ? lastImportMatch?.index || 0 + lastImportMatch[0].length
+      : 0;
 
-    const newImportStatement = mapperImport.get(importsName)
+    const newImportStatement = mapperImport.get(importsName);
 
     updatedContent = [
       updatedContent.slice(0, lastImportIndex),
       newImportStatement,
       updatedContent.slice(lastImportIndex),
     ].join('');
+  });
 
-  })
-
-  return updatedContent
+  return updatedContent;
 }

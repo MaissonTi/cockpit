@@ -47,8 +47,8 @@ const Home = () => {
       setUserCount(count);
     });
 
-    socket.on('message', (message) => {
-      setMessages((prev) => [...prev, message]);
+    socket.on('message', message => {
+      setMessages(prev => [...prev, message]);
     });
 
     socket.on('bidsUpdate', (updatedBids: Bid[]) => {
@@ -281,14 +281,14 @@ const Home = () => {
             type="text"
             placeholder="Digite seu nome"
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={e => setUsername(e.target.value)}
             style={{ padding: '10px', marginBottom: '10px', width: '300px' }}
           />
           <input
             type="text"
             placeholder="Digite o grupo"
             value={group}
-            onChange={(e) => setGroup(e.target.value)}
+            onChange={e => setGroup(e.target.value)}
             style={{ padding: '10px', marginBottom: '10px', width: '300px' }}
           />
           <button
@@ -374,7 +374,7 @@ const Home = () => {
             type="text"
             placeholder="Digite sua mensagem"
             value={currentMessage}
-            onChange={(e) => setCurrentMessage(e.target.value)}
+            onChange={e => setCurrentMessage(e.target.value)}
             style={{ padding: '10px', width: '300px', marginRight: '10px' }}
           />
           <button
@@ -493,7 +493,7 @@ const Home = () => {
             type="number"
             placeholder="Digite seu lance"
             value={currentBid}
-            onChange={(e) => setCurrentBid(parseFloat(e.target.value))}
+            onChange={e => setCurrentBid(parseFloat(e.target.value))}
             style={{ padding: '10px', width: '200px', marginRight: '10px' }}
           />
           <button

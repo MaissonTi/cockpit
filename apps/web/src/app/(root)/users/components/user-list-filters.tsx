@@ -18,11 +18,11 @@ type UserFiltersSchema = z.infer<typeof userFiltersSchema>;
 export function UserListFilters() {
   const formRef = useRef<HTMLFormElement>(null);
 
-  const [push, searchParams] = usePushParams<UserFiltersSchema>();
+  const { push, searchParams } = usePushParams<UserFiltersSchema>();
 
   const name = searchParams.get('name') || '';
 
-  const [_, handleSubmit] = useFormState<UserFiltersSchema>(
+  const { handleSubmit } = useFormState<UserFiltersSchema>(
     handleFilter,
     data => {
       if (data) {
