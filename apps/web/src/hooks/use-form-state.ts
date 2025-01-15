@@ -24,8 +24,6 @@ export function useFormState<T>(
     const form = event.currentTarget;
     const data = new FormData(form);
 
-    console.log('useFormState', data);
-
     startTransition(async () => {
       const state = await action(data);
 
@@ -37,5 +35,5 @@ export function useFormState<T>(
     });
   }
 
-  return [handleSubmit, formState, isPending] as const;
+  return [formState, handleSubmit, isPending] as const;
 }

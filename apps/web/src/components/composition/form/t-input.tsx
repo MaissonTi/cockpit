@@ -1,9 +1,9 @@
-"use client";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { ComponentProps } from "react";
+'use client';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { ComponentProps } from 'react';
 
-interface TInputProps extends ComponentProps<"input"> {
+interface TInputProps extends ComponentProps<'input'> {
   name: string;
   label?: string;
   error?: Record<string, string[]> | null;

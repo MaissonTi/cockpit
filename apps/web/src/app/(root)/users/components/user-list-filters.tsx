@@ -1,12 +1,12 @@
-import { Search, X } from "lucide-react";
-import { z } from "zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { usePushParams } from "@/hooks/use-push-params";
-import { FormState } from "@/hooks/use-t-form";
-import { validateZod } from "@/helper/validate-action";
-import { useFormState } from "@/hooks/use-form-state";
-import { useRef } from "react";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { validateZod } from '@/helper/validate-action';
+import { useFormState } from '@/hooks/use-form-state';
+import { usePushParams } from '@/hooks/use-push-params';
+import { FormState } from '@/hooks/use-t-form';
+import { Search, X } from 'lucide-react';
+import { useRef } from 'react';
+import { z } from 'zod';
 
 const userFiltersSchema = z.object({
   name: z.string().optional(),
@@ -20,11 +20,11 @@ export function UserListFilters() {
 
   const [push, searchParams] = usePushParams<UserFiltersSchema>();
 
-  const name = searchParams.get("name") || "";
+  const name = searchParams.get('name') || '';
 
-  const [handleSubmit] = useFormState<UserFiltersSchema>(
+  const [_, handleSubmit] = useFormState<UserFiltersSchema>(
     handleFilter,
-    (data) => {
+    data => {
       if (data) {
         const { page, name } = data as UserFiltersSchema;
         push({ search: { page, name } });
@@ -39,13 +39,13 @@ export function UserListFilters() {
     });
 
     const page = 1;
-    const name = result.data?.name ?? "";
+    const name = result.data?.name ?? '';
     return { ...result, data: { name, page } };
   }
 
   function handleClearFilters() {
     formRef?.current?.reset();
-    push({ path: "/users" });
+    push({ path: '/users' });
   }
 
   const hasAnyFilter = !!name;
@@ -53,14 +53,14 @@ export function UserListFilters() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex items-center justify-between gap-2"
+      className="flex items-center justify-between flex-wrap gap-2"
     >
       <div className="flex items-center gap-2">
         <span className="text-sm font-semibold">Filtros:</span>
         <Input
           name="name"
           placeholder="Nome do usuario"
-          className="h-8 w-[320px]"
+          className="h-8 max-w-[320px]"
         />
       </div>
 

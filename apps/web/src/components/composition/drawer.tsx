@@ -93,7 +93,7 @@ const Drawer: React.FC<DrawerProps> = ({
   return (
     <>
       {platform === DrawerPlatform.Mobile && open && (
-        <DrawerOverlay onClick={onClose} />
+        <DrawerOverlay onClick={onClose} className={className} />
       )}
       <div
         data-state={getState(open)}

@@ -1,11 +1,11 @@
-import { formatDistanceToNow } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { TableCell, TableRow } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Trash2, Pencil } from "lucide-react";
+import { Button } from '@/components/ui/button';
+import { TableCell, TableRow } from '@/components/ui/table';
+import { formatDistanceToNow } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { Pencil, Trash2 } from 'lucide-react';
 
 export type RetrunAction = {
-  type: "edit" | "delete";
+  type: 'edit' | 'delete';
   values: { [key: string]: unknown };
   action?: () => void | unknown;
 };
@@ -36,17 +36,17 @@ export function UserListRow({ data, onAction }: CustomTableRowProps) {
       <TableCell className="flex">
         <Button
           data-id={data.id}
-          onClick={() => onAction({ type: "edit", values: { id: data.id } })}
+          onClick={() => onAction({ type: 'edit', values: { id: data.id } })}
           variant="ghost"
         >
-          <Pencil className="h-5 w-5 text-blue-500 text-muted-foreground" />
+          <Pencil className="h-5 w-5 text-blue-500 " />
         </Button>
         <Button
           data-id={data.id}
-          onClick={() => onAction({ type: "delete", values: { id: data.id } })}
+          onClick={() => onAction({ type: 'delete', values: { id: data.id } })}
           variant="ghost"
         >
-          <Trash2 className="h-5 w-5 text-muted-foreground text-red-500" />
+          <Trash2 className="h-5 w-5 text-red-500" />
         </Button>
       </TableCell>
     </TableRow>

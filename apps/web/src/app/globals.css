@@ -16,6 +16,15 @@ body {
   * {
     @apply border-border;
   }
+  div,
+  header,
+  nav,
+  section,
+  article,
+  aside,
+  footer {
+    @apply bg-neutral-50 dark:bg-neutral-950;
+  }
   html {
     @apply h-full;
   }

@@ -1,9 +1,8 @@
+import AppProvider from '@/providers/app-provider';
+import { AuthProvider } from '@/providers/auth-provider';
+import { QueryProvider } from '@/providers/query-provider';
 import type { Metadata } from 'next';
 import './globals.css';
-import { AuthProvider } from '@/providers/auth-provider';
-import { ThemeProvider } from '@/providers/theme-provider';
-import { QueryProvider } from '@/providers/query-provider';
-import { ProviderAlert } from '@/components/composition/alert-dialog-general';
 
 export const metadata: Metadata = {
   title: 'Create Next App',
@@ -20,15 +19,7 @@ export default async function RootLayout({
       <body>
         <AuthProvider>
           <QueryProvider>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="dark"
-              enableSystem
-              disableTransitionOnChange
-            >
-              {children}
-              <ProviderAlert />
-            </ThemeProvider>
+            <AppProvider>{children}</AppProvider>
           </QueryProvider>
         </AuthProvider>
       </body>
