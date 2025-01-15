@@ -37,6 +37,11 @@ jobs:
       - name: Run tests
         run: pnpm run test
 
+      # Gerar os tipos do Prisma
+      - name: Generate Prisma Client
+        working-directory: ./apps/api
+        run: pnpm prisma generate
+
       # Build do projeto
       - name: Build project
         run: pnpm run build
