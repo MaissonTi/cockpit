@@ -1,6 +1,5 @@
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { EnvService } from './infra/env/env.service';
 import { SwaggerSetup } from './infra/swagger/swagger.config';
@@ -21,7 +20,7 @@ async function bootstrap() {
     }),
   );
 
-  const port = configService.get('PORT');
+  const port = configService.get('PORT') || 3333;
 
   SwaggerSetup.execute(app);
 

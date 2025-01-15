@@ -59,18 +59,38 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Configurar Terraform
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
+      # Instalar Node.js e pnpm
+      - name: Setup Node.js and pnpm
+        uses: actions/setup-node@v3
         with:
-          terraform_version: 1.5.0
+          node-version: 18
 
-      # Inicializar e aplicar o Terraform
-      - name: Terraform Init and Apply
-        working-directory: ./infra
+      - name: Install pnpm
+        run: |
+          npm install -g pnpm
+          pnpm --version
+
+      # Build e Deploy do Web no S3
+      - name: Build and Deploy Web to S3
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
-          terraform init
-          terraform apply -auto-approve
+          cd ./apps/web
+          pnpm install
+          pnpm run build
+          pnpm run export
+          aws s3 sync ./out s3://cockpit-web-01-2025 --delete
+
+      # Atualizar API na EC2
+      - name: Update API on EC2
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: 34.234.63.191
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /home/ec2-user/api
+            git pull origin main
+            pnpm install
+            pm2 restart api

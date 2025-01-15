@@ -1,5 +1,7 @@
 import { api, Options } from '@/lib/http-service';
-import { UserMessageResponseDTO as Message } from '@repo/domain/dtos/user-message.dto';
+//import { UserMessageResponseDTO as Message } from '@repo/domain/dtos/user-message.dto';
+
+type Message = { id?: number };
 
 type UpdateProcess = {
   id?: string;

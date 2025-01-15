@@ -60,3 +60,17 @@ pnpm-debug.log*
 # Misc
 .DS_Store
 *.pem
+
+
+# Terraform state files
+terraform.tfstate
+terraform.tfstate.backup
+
+# Terraform variables
+*.tfvars
+
+# Diretórios de cache do Terraform
+.terraform/
+
+# Arquivos de logs e planos temporários
+*.tfplan
